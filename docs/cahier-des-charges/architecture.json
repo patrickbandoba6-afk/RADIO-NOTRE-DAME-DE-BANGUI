@@ -1,0 +1,54 @@
+{
+  "official_name": "RADIO NOTRE DAME DE BANGUI",
+  "tagline": "La voix chrétienne de Bangui vers le monde",
+  "scope": "Global",
+  "platforms": [
+    "iOS",
+    "Android",
+    "Web public",
+    "Web admin"
+  ],
+  "core_modules": [
+    "Live Radio",
+    "Podcasts",
+    "Prédications",
+    "Bible",
+    "Prière",
+    "Témoignages",
+    "Communauté",
+    "Vidéo",
+    "Événements",
+    "Dons",
+    "Notifications",
+    "Recherche",
+    "Analytics",
+    "Back-office"
+  ],
+  "technical_stack": [
+    "Flutter ou React Native",
+    "REST/GraphQL",
+    "PostgreSQL",
+    "S3-compatible storage",
+    "CDN",
+    "Serveur radio/Icecast option",
+    "FCM/APNs",
+    "OAuth2/OIDC",
+    "OpenAPI"
+  ],
+  "international": [
+    "Multilingue",
+    "Multi-devises",
+    "Fuseaux horaires",
+    "Streaming mondial",
+    "Architecture multi-station"
+  ],
+  "security": [
+    "TLS",
+    "2FA admin",
+    "RBAC",
+    "Rate limiting",
+    "Backups",
+    "Audit logs",
+    "Privacy controls"
+  ]
+}
