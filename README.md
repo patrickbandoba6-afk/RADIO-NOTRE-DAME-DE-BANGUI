@@ -98,6 +98,12 @@ déjà implémenté, en cours, ou volontairement hors périmètre de cette
 première livraison (back-office web, infrastructure de streaming réelle,
 intégration de paiement, compatibilité CarPlay/Android Auto, etc.).
 
+## Sauvegarde automatique
+
+Toute modification faite sur ce projet via l'assistant est automatiquement
+committée et poussée sur ce dépôt GitHub (`origin/main`) — aucune action
+manuelle n'est nécessaire pour que les nouveautés soient enregistrées ici.
+
 ## Licence et droits
 
 Les contenus audio/vidéo utilisés dans les données d'exemple sont des
