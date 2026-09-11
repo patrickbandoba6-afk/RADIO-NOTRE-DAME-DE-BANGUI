@@ -616,6 +616,7 @@ export const SCHEMAS: SchemaContenu[] = [
       { nom: "nom", libelle: "Paroisse" },
       { nom: "quartier", libelle: "Quartier" },
       { nom: "ville", libelle: "Ville" },
+      { nom: "cure", libelle: "Curé" },
     ],
     champs: [
       { nom: "nom", libelle: "Nom", type: "texte", requis: true, pleineLargeur: true },
@@ -628,6 +629,8 @@ export const SCHEMAS: SchemaContenu[] = [
       { nom: "ville", libelle: "Ville", type: "texte", defaut: "Bangui" },
       { nom: "telephone", libelle: "Téléphone", type: "texte" },
       { nom: "email", libelle: "Email", type: "texte" },
+      { nom: "cure", libelle: "Curé", type: "texte", aide: "Nom du prêtre responsable de la paroisse." },
+      { nom: "vicaire", libelle: "Vicaire", type: "texte" },
       { nom: "latitude", libelle: "Latitude", type: "nombre" },
       { nom: "longitude", libelle: "Longitude", type: "nombre" },
       {

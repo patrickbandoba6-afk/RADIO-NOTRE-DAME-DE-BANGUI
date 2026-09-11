@@ -54,6 +54,12 @@ export function ParoissesScreen() {
                   {paroisse.adresse}
                   {paroisse.quartier ? ` · ${paroisse.quartier}` : ""}
                 </Text>
+                {paroisse.cure ? (
+                  <Text style={styles.detail} numberOfLines={1}>
+                    Curé : {paroisse.cure}
+                    {paroisse.vicaire ? ` · Vicaire : ${paroisse.vicaire}` : ""}
+                  </Text>
+                ) : null}
               </View>
             </View>
 

@@ -323,6 +323,8 @@ export interface Paroisse {
   dioceseId?: string;
   telephone?: string;
   email?: string;
+  cure?: string;
+  vicaire?: string;
   latitude?: number;
   longitude?: number;
   horairesMesses: { jour: string; heures: string[] }[];

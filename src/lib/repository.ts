@@ -247,6 +247,8 @@ function versParoisse(ligne: Ligne): Paroisse {
     dioceseId: ligne.diocese_id ?? undefined,
     telephone: ligne.telephone ?? undefined,
     email: ligne.email ?? undefined,
+    cure: ligne.cure ?? undefined,
+    vicaire: ligne.vicaire ?? undefined,
     latitude: ligne.latitude ?? undefined,
     longitude: ligne.longitude ?? undefined,
     horairesMesses: ligne.horaires_messes ?? [],
