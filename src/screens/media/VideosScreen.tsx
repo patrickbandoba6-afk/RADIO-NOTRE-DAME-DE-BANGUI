@@ -3,13 +3,37 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { EcranConteneur } from "@/components/EcranConteneur";
+import { EtatChargement, EtatVide } from "@/components/EtatsEcran";
 import { LiveBadge } from "@/components/LiveBadge";
-import { videos } from "@/data/sampleData";
+import { useContenu } from "@/hooks/useContenu";
+import { chargerVideos } from "@/lib/repository";
 import { colors, espacement, rayon } from "@/theme/colors";
+import type { VideoContenu } from "@/types";
 
 export function VideosScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
+  const { donnees: videos, chargement } = useContenu<VideoContenu[]>(chargerVideos, []);
+
+  if (chargement) {
+    return (
+      <EcranConteneur defilable={false}>
+        <EtatChargement />
+      </EcranConteneur>
+    );
+  }
+
+  if (videos.length === 0) {
+    return (
+      <EcranConteneur defilable={false}>
+        <EtatVide
+          icone="videocam-outline"
+          titre="Aucune vidéo pour le moment"
+          description="Les émissions filmées et messes en direct apparaîtront ici dès leur publication."
+        />
+      </EcranConteneur>
+    );
+  }
 
   return (
     <EcranConteneur defilable={false}>

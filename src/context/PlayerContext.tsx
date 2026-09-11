@@ -13,13 +13,19 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { config, fluxDisponibles } from "@/lib/config";
+import { config, fluxDisponibles, radioStreamConfigure } from "@/lib/config";
 import {
   libelleEnCours,
   recupererEtatServeur,
   type EtatServeurRadio,
 } from "@/lib/radioMetadata";
-import type { PisteEnCours, QualiteAudio } from "@/types";
+import type { PisteEnCours, QualiteAudio, RadioStatus } from "@/types";
+
+/** Retire tout paramètre de requête (jeton d'authentification) avant un log. */
+function urlSansJeton(url: string): string {
+  const indexParametres = url.indexOf("?");
+  return indexParametres === -1 ? url : url.slice(0, indexParametres);
+}
 
 interface PlayerContextValeur {
   pisteActuelle: PisteEnCours | null;
@@ -36,10 +42,14 @@ interface PlayerContextValeur {
   /** Titre transmis par la régie (métadonnée ICY), sinon libellé de repli. */
   titreEnCours: string;
   etatServeur: EtatServeurRadio | null;
+  /** État unifié du lecteur, dérivé de enLecture/enMemoireTampon/enReconnexion/erreur. */
+  statut: RadioStatus;
   lireDirect: () => void;
   lirePiste: (piste: PisteEnCours) => void;
   mettreEnPause: () => void;
   reprendre: () => void;
+  /** Arrêt complet : coupe la lecture et retire les contrôles de l'écran verrouillé. */
+  arreter: () => void;
   basculerLectureDirect: () => void;
   allerA: (secondes: number) => void;
   definirVitesse: (vitesse: number) => void;
@@ -60,6 +70,8 @@ const PISTE_DIRECT: PisteEnCours = {
 
 const NB_MAX_TENTATIVES_RECONNEXION = 6;
 const INTERVALLE_METADONNEES_MS = 20000;
+/** Délais de reconnexion progressifs ; le dernier est répété au-delà. */
+const DELAIS_RECONNEXION_MS = [2000, 5000, 10000, 20000];
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const playerRef = useRef<AudioPlayer | null>(null);
@@ -93,19 +105,36 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   const mettreAJourMetadonneesEcranVerrouille = useCallback(
     (piste: PisteEnCours) => {
-      player.setActiveForLockScreen(true, {
-        title: piste.titre,
-        artist: piste.sousTitre,
-        artworkUrl: piste.imageUrl,
-      });
+      const estDirect = piste.type === "direct";
+      player.setActiveForLockScreen(
+        true,
+        {
+          title: piste.titre,
+          artist: piste.sousTitre,
+          albumTitle: config.nomOfficiel,
+          artworkUrl: piste.imageUrl,
+        },
+        estDirect
+          ? { isLiveStream: true, showSeekBackward: false, showSeekForward: false }
+          : undefined
+      );
     },
     [player]
   );
 
+  const [erreurConfiguration, setErreurConfiguration] = useState<string | null>(null);
+
   const chargerEtLire = useCallback(
     (piste: PisteEnCours) => {
       tentativesReconnexion.current = 0;
+      setErreurConfiguration(null);
       setPisteActuelle(piste);
+      console.log(
+        "[PlayerContext] Chargement piste — longueur URL:",
+        piste.audioUrl.length,
+        "contient '?':",
+        piste.audioUrl.includes("?")
+      );
       player.replace({ uri: piste.audioUrl });
       player.play();
       mettreAJourMetadonneesEcranVerrouille(piste);
@@ -114,6 +143,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   );
 
   const lireDirect = useCallback(() => {
+    if (!radioStreamConfigure) {
+      setErreurConfiguration("Le flux radio n'est pas encore configuré.");
+      return;
+    }
     indexFlux.current = 0;
     chargerEtLire({ ...PISTE_DIRECT, audioUrl: fluxDisponibles[0] ?? config.radioStreamUrl });
   }, [chargerEtLire]);
@@ -136,6 +169,16 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
     player.play();
   }, [player, pisteActuelle, lireDirect]);
+
+  /** Arrêt complet (distinct de la pause) : coupe le flux et l'écran verrouillé. */
+  const arreter = useCallback(() => {
+    tentativesReconnexion.current = NB_MAX_TENTATIVES_RECONNEXION;
+    player.pause();
+    player.clearLockScreenControls();
+    setPisteActuelle(null);
+    setEnReconnexion(false);
+    setErreurConfiguration(null);
+  }, [player]);
 
   const basculerLectureDirect = useCallback(() => {
     if (pisteActuelle?.type === "direct" && status.playing) {
@@ -182,8 +225,17 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   // bascule sur le flux de secours une tentative sur deux lorsqu'il existe.
   useEffect(() => {
     if (!pisteActuelle) return;
+    if (status.error) {
+      console.error(
+        "[PlayerContext] Erreur de lecture:",
+        status.error,
+        "URL:",
+        urlSansJeton(pisteActuelle.audioUrl)
+      );
+    }
     if (status.error && tentativesReconnexion.current < NB_MAX_TENTATIVES_RECONNEXION) {
       setEnReconnexion(true);
+      const tentative = tentativesReconnexion.current;
       tentativesReconnexion.current += 1;
 
       let uri = pisteActuelle.audioUrl;
@@ -192,7 +244,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         uri = fluxDisponibles[indexFlux.current];
       }
 
-      const delai = Math.min(2000 * tentativesReconnexion.current, 15000);
+      const delai =
+        DELAIS_RECONNEXION_MS[Math.min(tentative, DELAIS_RECONNEXION_MS.length - 1)];
       const identifiant = setTimeout(() => {
         player.replace({ uri });
         player.play();
@@ -232,13 +285,25 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  const erreur = erreurConfiguration ?? status.error;
+
+  let statut: RadioStatus;
+  if (erreurConfiguration) statut = "error";
+  else if (enReconnexion) statut = "reconnecting";
+  else if (status.error) statut = "error";
+  else if (!pisteActuelle) statut = "idle";
+  else if (status.isBuffering) statut = "loading";
+  else if (status.playing) statut = "playing";
+  else statut = "paused";
+
   const valeur = useMemo<PlayerContextValeur>(
     () => ({
       pisteActuelle,
       enLecture: status.playing,
       enMemoireTampon: status.isBuffering,
       enReconnexion,
-      erreur: status.error,
+      erreur,
+      statut,
       positionSecondes: status.currentTime,
       dureeSecondes: status.duration,
       estDirect: status.isLive || pisteActuelle?.type === "direct",
@@ -251,6 +316,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       lirePiste,
       mettreEnPause,
       reprendre,
+      arreter,
       basculerLectureDirect,
       allerA,
       definirVitesse,
@@ -261,6 +327,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       pisteActuelle,
       status,
       enReconnexion,
+      erreur,
+      statut,
       qualiteAudio,
       minuteurSommeilMinutes,
       etatServeur,
@@ -268,6 +336,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       lirePiste,
       mettreEnPause,
       reprendre,
+      arreter,
       basculerLectureDirect,
       allerA,
       definirVitesse,

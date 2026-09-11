@@ -96,6 +96,36 @@ variables d'environnement (voir `.env.example`) :
 Le lecteur bascule automatiquement sur le flux de secours lorsqu'il est
 renseigné et que le flux principal échoue (`src/context/PlayerContext.tsx`).
 
+## Incident du 11/09/2026 — 401 Authentication Required
+
+Le direct ne démarre pas dans l'app (Expo Go, iOS) : `expo-audio` remonte
+`NSURLErrorDomain error -1013` (authentification requise).
+
+Diagnostic confirmé par test direct :
+
+```
+curl -I  .../listen.mp3   → 200 OK   (HEAD : ne compte pas comme un auditeur, trompeur)
+curl GET .../listen.mp3   → 401 Authentication Required
+```
+
+Et `status-json.xsl` le confirme explicitement :
+
+```json
+"source": { "authenticator": "url", ... }
+```
+
+**Conclusion :** l'endpoint public documenté plus haut nécessite en réalité un
+jeton d'authentification dans l'URL (`authenticator: "url"` côté Caster.fm),
+que la page publique de la station n'expose pas. La vérification du
+10/09/2026 a pu réussir avant que cette exigence ne soit (re)activée côté
+Caster.fm, ou via un mécanisme qui n'a pas été reproduit ici.
+
+**Action requise (ne peut pas être devinée) :** récupérer, depuis le compte
+Caster.fm de la station, l'URL d'écoute complète avec jeton (section
+« Direct Link »/« Embed »/« Listen Now » du tableau de bord), et la
+renseigner dans `EXPO_PUBLIC_RADIO_STREAM_AUTH` (ou directement dans
+`EXPO_PUBLIC_RADIO_STREAM_URL`).
+
 ## Points d'attention
 
 - **HTTP non chiffré.** Le flux est servi en `http://`. iOS l'autorise via

@@ -12,12 +12,14 @@ import {
 } from "react-native";
 import { EcranConteneur } from "@/components/EcranConteneur";
 import { EtatChargement, EtatVide } from "@/components/EtatsEcran";
+import { LiveBadge } from "@/components/LiveBadge";
 import { usePlayer } from "@/context/PlayerContext";
 import { useContenu } from "@/hooks/useContenu";
 import { formaterDateCourte, formaterDuree } from "@/lib/format";
-import { chargerEmissions, chargerEpisodes } from "@/lib/repository";
+import { chargerEmissions, chargerEpisodes, chargerVideos } from "@/lib/repository";
 import { colors, espacement, rayon } from "@/theme/colors";
 import type { EmissionCatalogue, Episode } from "@/types/editorial";
+import type { VideoContenu } from "@/types";
 
 export function PodcastsScreen() {
   const navigation = useNavigation<any>();
@@ -32,6 +34,7 @@ export function PodcastsScreen() {
     () => chargerEpisodes(),
     []
   );
+  const { donnees: videos } = useContenu<VideoContenu[]>(chargerVideos, []);
 
   const terme = recherche.trim().toLowerCase();
 
@@ -58,6 +61,11 @@ export function PodcastsScreen() {
           )
         : episodes,
     [episodes, terme]
+  );
+
+  const videosFiltrees = useMemo(
+    () => (terme ? videos.filter((v) => v.titre.toLowerCase().includes(terme)) : videos),
+    [videos, terme]
   );
 
   function nomEmission(emissionId: string) {
@@ -104,7 +112,9 @@ export function PodcastsScreen() {
 
       {chargement ? (
         <EtatChargement />
-      ) : emissionsFiltrees.length === 0 && episodesFiltres.length === 0 ? (
+      ) : emissionsFiltrees.length === 0 &&
+        episodesFiltres.length === 0 &&
+        videosFiltrees.length === 0 ? (
         <EtatVide
           icone="search-outline"
           titre="Aucun résultat"
@@ -174,6 +184,47 @@ export function PodcastsScreen() {
               </View>
             </>
           ) : null}
+
+          {videosFiltrees.length > 0 ? (
+            <>
+              <View style={styles.enteteSection}>
+                <Text style={styles.titreSection}>Podcasts vidéo</Text>
+                <TouchableOpacity onPress={() => navigation.navigate("Videos")}>
+                  <Text style={styles.voirTout}>Voir tout</Text>
+                </TouchableOpacity>
+              </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.listeHorizontale}
+              >
+                {videosFiltrees.map((video) => (
+                  <TouchableOpacity
+                    key={video.id}
+                    style={styles.carteVideo}
+                    activeOpacity={0.85}
+                    onPress={() => navigation.navigate("LecteurVideo", { id: video.id })}
+                  >
+                    <Image source={{ uri: video.imageUrl }} style={styles.imageVideo} />
+                    <View style={styles.badgeLecturePlay}>
+                      <Ionicons name="play" size={14} color={colors.fond} />
+                    </View>
+                    {video.estEnDirect ? (
+                      <View style={styles.overlayDirect}>
+                        <LiveBadge />
+                      </View>
+                    ) : null}
+                    <Text style={styles.titreEpisode} numberOfLines={2}>
+                      {video.titre}
+                    </Text>
+                    <Text style={styles.metaEpisode} numberOfLines={1}>
+                      {Math.round(video.dureeSecondes / 60)} min
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </>
+          ) : null}
         </ScrollView>
       )}
     </EcranConteneur>
@@ -239,4 +290,30 @@ const styles = StyleSheet.create({
   },
   titreEpisode: { color: colors.texte, fontSize: 13, fontWeight: "700", marginTop: 8, lineHeight: 18 },
   metaEpisode: { color: colors.texteSecondaire, fontSize: 11, marginTop: 3 },
+  enteteSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: espacement.md,
+  },
+  voirTout: { color: colors.primaire, fontSize: 12, fontWeight: "700" },
+  carteVideo: { width: 200 },
+  imageVideo: {
+    width: 200,
+    height: 120,
+    borderRadius: rayon.md,
+    backgroundColor: colors.carte,
+  },
+  badgeLecturePlay: {
+    position: "absolute",
+    right: 8,
+    bottom: 40,
+    backgroundColor: colors.primaire,
+    borderRadius: rayon.rond,
+    width: 30,
+    height: 30,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  overlayDirect: { position: "absolute", top: 8, left: 8 },
 });

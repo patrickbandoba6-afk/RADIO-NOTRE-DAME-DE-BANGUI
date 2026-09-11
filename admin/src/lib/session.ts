@@ -31,6 +31,33 @@ export const LIBELLES_ROLE: Record<RoleInterne, string> = {
   comptabilite: "Comptabilité",
 };
 
+export const DESCRIPTIONS_ROLE: Record<RoleInterne, string> = {
+  super_administrateur: "Accès complet à l'administration et à la configuration de l'application.",
+  direction: "Supervision générale de la radio, des contenus, programmes et rapports.",
+  producteur: "Préparation et production des émissions et contenus audio.",
+  animateur: "Animation des émissions et préparation des contenus liés à ses émissions.",
+  editeur: "Création, modification et publication des contenus éditoriaux.",
+  moderateur: "Gestion des signalements et modération de la communauté.",
+  equipe_priere: "Gestion et suivi des intentions de prière.",
+  comptabilite: "Gestion financière, dons et rapports.",
+};
+
+/**
+ * Groupes de contenu (voir `schemas.ts`) visibles dans le menu latéral selon
+ * le rôle — chacun ne voit que ce qui concerne son pôle de travail.
+ * "tout" donne accès à l'ensemble des rubriques.
+ */
+export const GROUPES_PAR_ROLE: Record<RoleInterne, string[] | "tout"> = {
+  super_administrateur: "tout",
+  direction: "tout",
+  producteur: ["Radio", "Diffusion", "Éditorial"],
+  animateur: ["Radio", "Diffusion"],
+  editeur: ["Éditorial", "Diffusion"],
+  moderateur: ["Spiritualité", "Éditorial"],
+  equipe_priere: ["Spiritualité"],
+  comptabilite: [],
+};
+
 interface EtatSession {
   session: Session | null;
   chargement: boolean;

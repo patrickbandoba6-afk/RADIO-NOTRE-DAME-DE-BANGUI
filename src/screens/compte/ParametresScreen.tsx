@@ -1,3 +1,4 @@
+import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
@@ -16,6 +17,7 @@ const QUALITES: QualiteAudio[] = ["eco", "standard", "haute"];
 
 export function ParametresScreen() {
   const { t, i18n } = useTranslation();
+  const navigation = useNavigation<any>();
   const {
     telechargementWifiUniquement,
     modeFaibleConnexion,
@@ -77,6 +79,13 @@ export function ParametresScreen() {
 
       <Text style={styles.sectionTitre}>{t("parametres.aPropos")}</Text>
       <Text style={styles.aPropos}>{t("parametres.version")} 1.0.0</Text>
+      <Text style={styles.aPropos}>Développé par Agence Web et Marketing — succursale de GLOBALY_JC</Text>
+      <TouchableOpacity
+        style={styles.ligneMentions}
+        onPress={() => navigation.navigate("MentionsLegales")}
+      >
+        <Text style={styles.ligneMentionsTexte}>Mentions légales, confidentialité et CGU</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -102,4 +111,6 @@ const styles = StyleSheet.create({
   },
   libelle: { color: colors.texte, fontSize: 13, flex: 1, marginRight: espacement.sm },
   aPropos: { color: colors.texteSecondaire, fontSize: 13 },
+  ligneMentions: { marginTop: espacement.md },
+  ligneMentionsTexte: { color: colors.primaire, fontSize: 13, fontWeight: "600" },
 });

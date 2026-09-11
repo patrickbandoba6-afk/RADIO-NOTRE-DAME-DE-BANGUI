@@ -2,10 +2,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import * as Calendar from "expo-calendar";
 import React, { useState } from "react";
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { EtatChargement, EtatVide } from "@/components/EtatsEcran";
 import { useFavoris } from "@/context/FavorisContext";
 import { useContenu } from "@/hooks/useContenu";
+import { alerter } from "@/lib/alerte";
 import {
   appeler,
   envoyerEmail,
@@ -53,7 +54,7 @@ export function DetailAnnonceScreen() {
         location: annonce.adresse ?? annonce.lieu,
         timeZone: "Africa/Bangui",
       });
-      Alert.alert(annonce.titre, "Ajouté à votre calendrier.");
+      alerter(annonce.titre, "Ajouté à votre calendrier.");
     } catch {
       // Le calendrier n'est pas disponible sur cette plateforme.
     }

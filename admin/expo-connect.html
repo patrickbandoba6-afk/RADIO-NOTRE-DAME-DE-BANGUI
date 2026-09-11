@@ -1,0 +1,259 @@
+<title>Connexion Expo Go</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --bg:#f4efe4;
+    --surface:#ffffff;
+    --surface-border:#e4dcc9;
+    --ink:#1c1a16;
+    --ink-dim:#5c5648;
+    --accent:#b9822f;
+    --accent-ink:#5a3d13;
+    --plate:#fdfbf5;
+    --plate-ink:#14120f;
+    --focus:#8a5b1f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#121110;
+      --surface:#1c1a17;
+      --surface-border:#332e26;
+      --ink:#f1ece0;
+      --ink-dim:#b6ac98;
+      --accent:#e3ac54;
+      --accent-ink:#2a1c08;
+      --plate:#fdfbf5;
+      --plate-ink:#14120f;
+      --focus:#e3ac54;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#121110;
+    --surface:#1c1a17;
+    --surface-border:#332e26;
+    --ink:#f1ece0;
+    --ink-dim:#b6ac98;
+    --accent:#e3ac54;
+    --accent-ink:#2a1c08;
+    --plate:#fdfbf5;
+    --plate-ink:#14120f;
+    --focus:#e3ac54;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Sora",system-ui,sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 16px;
+  }
+  .carte{
+    width:100%;
+    max-width:420px;
+    background:var(--surface);
+    border:1px solid var(--surface-border);
+    border-radius:20px;
+    padding:32px 28px 28px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:20px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.04);
+  }
+  .frequence{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    color:var(--accent-ink);
+    background:color-mix(in srgb, var(--accent) 22%, transparent);
+    border:1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    padding:4px 10px;
+    border-radius:999px;
+    text-transform:uppercase;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .frequence{ color:var(--accent); }
+  }
+  :root[data-theme="dark"] .frequence{ color:var(--accent); }
+
+  h1{
+    margin:0;
+    font-size:1.35rem;
+    font-weight:700;
+    text-align:center;
+    text-wrap:balance;
+    letter-spacing:-0.01em;
+  }
+  .sous-titre{
+    margin:-12px 0 0;
+    font-size:0.86rem;
+    color:var(--ink-dim);
+    text-align:center;
+    max-width:30ch;
+  }
+
+  .plaque{
+    background:var(--plate);
+    padding:16px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:inset 0 0 0 1px rgba(20,18,15,0.06);
+  }
+  #qr{ line-height:0; }
+  #qr img{ display:block; border-radius:2px; }
+
+  .adresse{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .adresse a{
+    flex:1;
+    min-width:0;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:0.86rem;
+    font-variant-numeric:tabular-nums;
+    color:var(--ink);
+    background:var(--bg);
+    border:1px solid var(--surface-border);
+    border-radius:10px;
+    padding:10px 12px;
+    text-decoration:none;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  button.copier{
+    flex-shrink:0;
+    font-family:"Sora",sans-serif;
+    font-size:0.82rem;
+    font-weight:600;
+    color:var(--accent-ink);
+    background:var(--accent);
+    border:none;
+    border-radius:10px;
+    padding:10px 14px;
+    cursor:pointer;
+  }
+  button.copier:focus-visible, .adresse a:focus-visible{
+    outline:2px solid var(--focus);
+    outline-offset:2px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) button.copier{ color:var(--accent-ink); }
+  }
+
+  .etapes{
+    width:100%;
+    margin:0;
+    padding:0;
+    list-style:none;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    border-top:1px solid var(--surface-border);
+    padding-top:16px;
+  }
+  .etapes li{
+    display:flex;
+    gap:10px;
+    font-size:0.86rem;
+    color:var(--ink-dim);
+    line-height:1.4;
+  }
+  .etapes b{
+    color:var(--ink);
+    font-weight:600;
+  }
+  .num{
+    flex-shrink:0;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:var(--bg);
+    border:1px solid var(--surface-border);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:0.72rem;
+    color:var(--ink-dim);
+  }
+
+  .statut{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-size:0.78rem;
+    color:var(--ink-dim);
+  }
+  .point{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#4f9d5e;
+    box-shadow:0 0 0 3px color-mix(in srgb, #4f9d5e 22%, transparent);
+  }
+</style>
+
+<div class="carte">
+  <span class="frequence">103.3 FM · Bangui</span>
+  <h1>Connexion à Expo Go</h1>
+  <p class="sous-titre">Scanne ce code depuis l'app Expo Go pour ouvrir l'application mobile en développement.</p>
+
+  <div class="plaque"><div id="qr"></div></div>
+
+  <div class="adresse">
+    <a id="lien-exp" href="exp://192.168.1.20:8081">exp://192.168.1.20:8081</a>
+    <button class="copier" id="bouton-copier" type="button">Copier</button>
+  </div>
+
+  <ol class="etapes">
+    <li><span class="num">1</span><span>Ouvre <b>Expo Go</b> sur ton téléphone (même Wi-Fi que ce PC).</span></li>
+    <li><span class="num">2</span><span>Onglet <b>Scan QR code</b>, vise le carré ci-dessus.</span></li>
+    <li><span class="num">3</span><span>L'app <b>Radio Notre-Dame de Bangui</b> se lance automatiquement.</span></li>
+  </ol>
+
+  <div class="statut"><span class="point"></span> Serveur Metro attendu sur 192.168.1.20:8081</div>
+</div>
+
+<script>
+  var adresse = "exp://192.168.1.20:8081";
+
+  new QRCode(document.getElementById("qr"), {
+    text: adresse,
+    width: 220,
+    height: 220,
+    colorDark: "#14120f",
+    colorLight: "#fdfbf5",
+    correctLevel: QRCode.CorrectLevel.M
+  });
+
+  document.getElementById("bouton-copier").addEventListener("click", function(){
+    var bouton = this;
+    var restaurer = function(texte){ setTimeout(function(){ bouton.textContent = texte; }, 1400); };
+    try{
+      navigator.clipboard.writeText(adresse).then(function(){
+        bouton.textContent = "Copié";
+        restaurer("Copier");
+      }).catch(function(){
+        bouton.textContent = "Échec";
+        restaurer("Copier");
+      });
+    }catch(e){
+      bouton.textContent = "Échec";
+      restaurer("Copier");
+    }
+  });
+</script>

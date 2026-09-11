@@ -2,7 +2,6 @@ import { useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { alerter } from "@/lib/alerte";
 import { colors, espacement, rayon } from "@/theme/colors";
 import type { ConfidentialitePriere } from "@/types";
 
@@ -25,7 +25,7 @@ export function NouvelleDemandePriereScreen() {
 
   function envoyer() {
     if (!texte.trim()) return;
-    Alert.alert(t("priere.nouvelleDemande"), t("priere.statutRecue"));
+    alerter(t("priere.nouvelleDemande"), t("priere.statutRecue"));
     navigation.goBack();
   }
 

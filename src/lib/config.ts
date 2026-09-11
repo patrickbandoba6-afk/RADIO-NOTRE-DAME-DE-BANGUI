@@ -2,21 +2,24 @@
  * Configuration centrale de la station.
  *
  * Toutes les valeurs de flux sont surchargeables par variables
- * d'environnement (voir `.env.example` et `radio.config.example`) afin de
- * pouvoir changer d'hébergeur sans toucher au code.
+ * d'environnement (voir `.env.example`) afin de pouvoir changer d'hébergeur
+ * sans toucher au code.
  *
- * Flux vérifié le 10/09/2026 sur https://radionotredame.caster.fm/ :
- *   listenurl   http://shaincast.caster.fm:16045/listen.mp3
- *   icy-name    Radio Notre Dame de Bangui
- *   server_type audio/mpeg (MP3) — 128 kbps, 44,1 kHz stéréo
- *   serveur     Caster Streaming Server 2.3 (compatible Icecast/Shoutcast)
+ * IMPORTANT : aucune URL de flux n'est codée en dur ici. Le flux
+ * `http://shaincast.caster.fm:16045/listen.mp3` documenté dans
+ * `docs/FLUX-RADIO.md` exige une authentification par URL côté Caster.fm
+ * (`"authenticator":"url"` — voir l'incident du 11/09/2026 dans ce même
+ * document) : tant que le jeton réel n'est pas fourni par la station, le
+ * flux reste volontairement non configuré plutôt que de pointer vers une
+ * URL connue pour échouer.
  */
 
 const JETON_ECOUTE = process.env.EXPO_PUBLIC_RADIO_STREAM_AUTH ?? "";
+const URL_FLUX_BASE = process.env.EXPO_PUBLIC_RADIO_STREAM_URL ?? "";
 
-const FLUX_PRINCIPAL_PAR_DEFAUT =
-  "http://shaincast.caster.fm:16045/listen.mp3" +
-  (JETON_ECOUTE ? `?${JETON_ECOUTE}` : "");
+const FLUX_PRINCIPAL_PAR_DEFAUT = URL_FLUX_BASE
+  ? URL_FLUX_BASE + (JETON_ECOUTE ? `${URL_FLUX_BASE.includes("?") ? "&" : "?"}${JETON_ECOUTE}` : "")
+  : "";
 
 export const config = {
   // --- Identité de la station -------------------------------------------
@@ -43,8 +46,21 @@ export const config = {
   siteWeb: process.env.EXPO_PUBLIC_RADIO_SITE ?? null,
   facebook: process.env.EXPO_PUBLIC_RADIO_FACEBOOK ?? null,
 
+  // --- Lives sur les réseaux sociaux (liens externes) --------------------
+  liveFacebook: process.env.EXPO_PUBLIC_LIVE_FACEBOOK ?? null,
+  liveYoutube: process.env.EXPO_PUBLIC_LIVE_YOUTUBE ?? null,
+  liveInstagram: process.env.EXPO_PUBLIC_LIVE_INSTAGRAM ?? null,
+  liveTiktok: process.env.EXPO_PUBLIC_LIVE_TIKTOK ?? null,
+
+  // --- Dons : paiement manuel (Mobile Money / virement) ------------------
+  donsOrangeUssd: process.env.EXPO_PUBLIC_DONS_ORANGE_USSD ?? null,
+  donsOrangeCodeMarchand: process.env.EXPO_PUBLIC_DONS_ORANGE_CODE_MARCHAND ?? null,
+  donsOrangeNumero: process.env.EXPO_PUBLIC_DONS_ORANGE_NUMERO ?? null,
+  donsBanqueNom: process.env.EXPO_PUBLIC_DONS_BANQUE_NOM ?? null,
+  donsBanqueCompte: process.env.EXPO_PUBLIC_DONS_BANQUE_COMPTE ?? null,
+
   // --- Flux audio --------------------------------------------------------
-  radioStreamUrl: process.env.EXPO_PUBLIC_RADIO_STREAM_URL ?? FLUX_PRINCIPAL_PAR_DEFAUT,
+  radioStreamUrl: FLUX_PRINCIPAL_PAR_DEFAUT,
   radioStreamUrlSecours: process.env.EXPO_PUBLIC_RADIO_STREAM_BACKUP_URL ?? "",
   radioStreamType: process.env.EXPO_PUBLIC_RADIO_STREAM_TYPE ?? "SHOUTCAST",
   radioStreamCodec: process.env.EXPO_PUBLIC_RADIO_STREAM_CODEC ?? "MP3",
@@ -61,10 +77,16 @@ export const config = {
   // --- Supabase ----------------------------------------------------------
   supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ?? "",
   supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "",
+
+  // --- Espace administrateur (back-office web intégré en WebView) --------
+  adminUrl: process.env.EXPO_PUBLIC_ADMIN_URL ?? "",
 };
 
 export const supabaseEstConfigure =
   config.supabaseUrl.length > 0 && config.supabaseAnonKey.length > 0;
+
+/** Faux tant que EXPO_PUBLIC_RADIO_STREAM_URL n'est pas renseignée. */
+export const radioStreamConfigure = config.radioStreamUrl.length > 0;
 
 /** Liste ordonnée des flux à essayer : principal puis secours. */
 export const fluxDisponibles = [config.radioStreamUrl, config.radioStreamUrlSecours].filter(

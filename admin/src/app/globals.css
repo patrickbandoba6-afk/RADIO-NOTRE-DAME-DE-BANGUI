@@ -223,6 +223,8 @@ textarea.grand { min-height: 260px; }
 .boite-connexion .marque p { margin: 4px 0 0; font-size: 12.5px; color: var(--texte-doux); }
 .boite-connexion .champ { margin-bottom: 14px; }
 .boite-connexion .bouton { width: 100%; justify-content: center; padding: 11px; }
+.liens-connexion { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 16px; }
+.lien-texte { background: none; border: none; padding: 0; font-size: 12.5px; color: var(--bleu); cursor: pointer; text-decoration: underline; }
 
 .barre-recherche { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
 .barre-recherche input { flex: 1; min-width: 220px; }

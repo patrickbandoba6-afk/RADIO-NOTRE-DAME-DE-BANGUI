@@ -1,22 +1,46 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { supabase, supabaseEstConfigure } from "@/lib/supabase";
 
 export default function PageConnexion() {
   const router = useRouter();
+  const [mode, setMode] = useState<"connexion" | "inscription">("connexion");
+  const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
   const [erreur, setErreur] = useState<string | null>(null);
+  const [succes, setSucces] = useState<string | null>(null);
   const [enCours, setEnCours] = useState(false);
 
-  async function seConnecter(evenement: React.FormEvent) {
+  async function valider(evenement: React.FormEvent) {
     evenement.preventDefault();
     if (!supabase) return;
 
     setEnCours(true);
     setErreur(null);
+    setSucces(null);
+
+    if (mode === "inscription") {
+      const { error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: motDePasse,
+        options: { data: { nom: nom.trim() || undefined } },
+      });
+      setEnCours(false);
+      if (error) {
+        setErreur(error.message);
+        return;
+      }
+      setSucces(
+        "Compte créé. Un super administrateur doit maintenant vous attribuer un rôle (page Équipe & rôles) avant que vous puissiez accéder au back-office."
+      );
+      setMode("connexion");
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password: motDePasse,
@@ -49,37 +73,79 @@ export default function PageConnexion() {
             <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> dans <code>admin/.env.local</code>.
           </div>
         ) : (
-          <form onSubmit={seConnecter}>
+          <>
             {erreur ? <div className="message erreur">{erreur}</div> : null}
+            {succes ? <div className="message succes">{succes}</div> : null}
 
-            <div className="champ">
-              <label htmlFor="email">Adresse e-mail</label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                required
-              />
+            <form onSubmit={valider}>
+              {mode === "inscription" ? (
+                <div className="champ">
+                  <label htmlFor="nom">Nom</label>
+                  <input
+                    id="nom"
+                    type="text"
+                    value={nom}
+                    onChange={(e) => setNom(e.target.value)}
+                    autoComplete="name"
+                  />
+                </div>
+              ) : null}
+
+              <div className="champ">
+                <label htmlFor="email">Adresse e-mail</label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                  required
+                />
+              </div>
+
+              <div className="champ">
+                <label htmlFor="motdepasse">Mot de passe</label>
+                <input
+                  id="motdepasse"
+                  type="password"
+                  value={motDePasse}
+                  onChange={(e) => setMotDePasse(e.target.value)}
+                  autoComplete={mode === "inscription" ? "new-password" : "current-password"}
+                  minLength={6}
+                  required
+                />
+              </div>
+
+              <button className="bouton" type="submit" disabled={enCours}>
+                {enCours
+                  ? mode === "inscription"
+                    ? "Inscription…"
+                    : "Connexion…"
+                  : mode === "inscription"
+                  ? "S'inscrire"
+                  : "Se connecter"}
+              </button>
+            </form>
+
+            <div className="liens-connexion">
+              <button
+                type="button"
+                className="lien-texte"
+                onClick={() => {
+                  setMode(mode === "inscription" ? "connexion" : "inscription");
+                  setErreur(null);
+                  setSucces(null);
+                }}
+              >
+                {mode === "inscription" ? "Déjà inscrit ? Se connecter" : "Pas encore de compte ? S'inscrire"}
+              </button>
+              {mode === "connexion" ? (
+                <Link href="/mot-de-passe-oublie" className="lien-texte">
+                  Mot de passe oublié ?
+                </Link>
+              ) : null}
             </div>
-
-            <div className="champ">
-              <label htmlFor="motdepasse">Mot de passe</label>
-              <input
-                id="motdepasse"
-                type="password"
-                value={motDePasse}
-                onChange={(e) => setMotDePasse(e.target.value)}
-                autoComplete="current-password"
-                required
-              />
-            </div>
-
-            <button className="bouton" type="submit" disabled={enCours}>
-              {enCours ? "Connexion…" : "Se connecter"}
-            </button>
-          </form>
+          </>
         )}
       </div>
     </div>

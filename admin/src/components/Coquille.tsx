@@ -4,15 +4,24 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { schemasParGroupe } from "@/lib/schemas";
-import { LIBELLES_ROLE, useSession } from "@/lib/session";
+import { DESCRIPTIONS_ROLE, GROUPES_PAR_ROLE, LIBELLES_ROLE, useSession } from "@/lib/session";
 import { supabase, supabaseEstConfigure } from "@/lib/supabase";
+import { usePermissions } from "@/lib/usePermissions";
 
 /**
  * Coquille de l'administration : barre latérale, garde d'authentification et
  * zone de contenu. Toute page protégée doit être enveloppée par ce composant.
  */
-export function Coquille({ children }: { children: React.ReactNode }) {
+export function Coquille({
+  children,
+  permissionRequise,
+}: {
+  children: React.ReactNode;
+  /** Si fournie, bloque réellement l'accès à la page (pas seulement le lien du menu). */
+  permissionRequise?: string;
+}) {
   const { session, chargement } = useSession();
+  const { hasPermission, chargement: chargementPermissions } = usePermissions();
   const router = useRouter();
   const chemin = usePathname();
 
@@ -67,7 +76,10 @@ export function Coquille({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const groupes = schemasParGroupe();
+  const groupesAutorises = GROUPES_PAR_ROLE[session.role];
+  const groupes = [...schemasParGroupe().entries()].filter(
+    ([groupe]) => groupesAutorises === "tout" || groupesAutorises.includes(groupe)
+  );
 
   return (
     <div className="app">
@@ -84,7 +96,66 @@ export function Coquille({ children }: { children: React.ReactNode }) {
           <span className="emoji">📊</span> Tableau de bord
         </Link>
 
-        {[...groupes.entries()].map(([groupe, schemas]) => (
+        <div
+          style={{
+            margin: "10px 14px",
+            padding: "10px 12px",
+            borderRadius: 10,
+            background: "rgba(255,255,255,0.07)",
+          }}
+        >
+          <div style={{ fontSize: 10.5, letterSpacing: 0.5, textTransform: "uppercase", color: "rgba(255,255,255,0.55)" }}>
+            Ma tâche
+          </div>
+          <div style={{ color: "#fff", fontWeight: 700, fontSize: 13, marginTop: 2 }}>
+            {LIBELLES_ROLE[session.role]}
+          </div>
+          <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 11.5, marginTop: 3, lineHeight: 1.4 }}>
+            {DESCRIPTIONS_ROLE[session.role]}
+          </div>
+        </div>
+
+        <Link href="/taches" className={`sidebar-lien${chemin === "/taches" ? " actif" : ""}`}>
+          <span className="emoji">✅</span> {hasPermission("tasks.assign") ? "Gestion des tâches" : "Mes tâches"}
+        </Link>
+
+        {hasPermission("users.create") ? (
+          <Link href="/dispatcher" className={`sidebar-lien${chemin === "/dispatcher" ? " actif" : ""}`}>
+            <span className="emoji">🧭</span> Dispatcher
+          </Link>
+        ) : null}
+
+        {hasPermission("files.view") ? (
+          <Link href="/fichiers" className={`sidebar-lien${chemin === "/fichiers" ? " actif" : ""}`}>
+            <span className="emoji">📁</span> Fichiers partagés
+          </Link>
+        ) : null}
+
+        {hasPermission("users.view") ? (
+          <Link href="/equipe" className={`sidebar-lien${chemin === "/equipe" ? " actif" : ""}`}>
+            <span className="emoji">👥</span> Équipe
+          </Link>
+        ) : null}
+
+        {hasPermission("services.manage") ? (
+          <Link href="/services" className={`sidebar-lien${chemin === "/services" ? " actif" : ""}`}>
+            <span className="emoji">🏷️</span> Services
+          </Link>
+        ) : null}
+
+        {hasPermission("roles.view") ? (
+          <Link href="/roles" className={`sidebar-lien${chemin.startsWith("/roles") ? " actif" : ""}`}>
+            <span className="emoji">🔐</span> Rôles & permissions
+          </Link>
+        ) : null}
+
+        {hasPermission("finance.view") ? (
+          <Link href="/comptabilite" className={`sidebar-lien${chemin === "/comptabilite" ? " actif" : ""}`}>
+            <span className="emoji">💰</span> Comptabilité
+          </Link>
+        ) : null}
+
+        {groupes.map(([groupe, schemas]) => (
           <div key={groupe}>
             <div className="sidebar-groupe">{groupe}</div>
             {schemas.map((schema) => {
@@ -105,6 +176,13 @@ export function Coquille({ children }: { children: React.ReactNode }) {
         <div className="sidebar-pied">
           <div style={{ color: "#fff", fontWeight: 600 }}>{session.nom ?? session.email}</div>
           <div>{LIBELLES_ROLE[session.role]}</div>
+          <Link
+            href="/profil"
+            className="bouton secondaire"
+            style={{ marginTop: 10, width: "100%", justifyContent: "center", padding: "7px" }}
+          >
+            Mon profil
+          </Link>
           <button
             className="bouton secondaire"
             style={{ marginTop: 10, width: "100%", justifyContent: "center", padding: "7px" }}
@@ -118,7 +196,23 @@ export function Coquille({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <main className="contenu">{children}</main>
+      <main className="contenu">
+        {permissionRequise && !chargementPermissions && !hasPermission(permissionRequise) ? (
+          <>
+            <div className="entete-page">
+              <div>
+                <h1>Accès refusé</h1>
+                <p>Vous n&apos;avez pas les permissions nécessaires pour accéder à cette page.</p>
+              </div>
+            </div>
+            <Link href="/" className="bouton secondaire">← Retour au tableau de bord</Link>
+          </>
+        ) : permissionRequise && chargementPermissions ? (
+          <div className="chargement">Vérification des accès…</div>
+        ) : (
+          children
+        )}
+      </main>
     </div>
   );
 }

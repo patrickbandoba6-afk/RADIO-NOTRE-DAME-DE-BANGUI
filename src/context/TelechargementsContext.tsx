@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { File, type DownloadTask } from "expo-file-system";
 import * as Network from "expo-network";
+import { Platform } from "react-native";
 import React, {
   createContext,
   useCallback,
@@ -110,6 +111,10 @@ export function TelechargementsProvider({ children }: { children: React.ReactNod
       imageUrl: string;
       audioUrl: string;
     }) => {
+      if (Platform.OS === "web") {
+        setErreurWifiRequis("Le téléchargement hors-ligne n'est pas disponible dans la version web.");
+        return;
+      }
       if (telechargementWifiUniquement) {
         const etatReseau = await Network.getNetworkStateAsync();
         if (etatReseau.type !== Network.NetworkStateType.WIFI) {

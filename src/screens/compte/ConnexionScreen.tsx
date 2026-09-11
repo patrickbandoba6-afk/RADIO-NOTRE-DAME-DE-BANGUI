@@ -1,8 +1,7 @@
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -10,12 +9,16 @@ import {
   View,
 } from "react-native";
 import { useAuth } from "@/context/AuthContext";
+import { alerter } from "@/lib/alerte";
 import { colors, espacement, rayon } from "@/theme/colors";
 
 export function ConnexionScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const depuisLancement = route.params?.depuisLancement === true;
   const { connecterAvecEmail, inscrireAvecEmail, continuerEnInvite } = useAuth();
+  const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
   const [modeInscription, setModeInscription] = useState(false);
@@ -23,12 +26,31 @@ export function ConnexionScreen() {
 
   async function valider() {
     setEnCours(true);
-    const erreur = modeInscription
-      ? await inscrireAvecEmail(email, motDePasse)
-      : await connecterAvecEmail(email, motDePasse);
+    if (modeInscription) {
+      const { erreur, confirmationRequise } = await inscrireAvecEmail(email, motDePasse, nom || email);
+      setEnCours(false);
+      if (erreur) {
+        alerter(t("commun.erreur") as string, erreur);
+        return;
+      }
+      if (confirmationRequise) {
+        alerter(
+          "Confirmez votre e-mail",
+          "Un e-mail de confirmation vous a été envoyé. Cliquez sur le lien, puis connectez-vous."
+        );
+        setModeInscription(false);
+        return;
+      }
+      depuisLancement ? navigation.replace("App") : navigation.goBack();
+      return;
+    }
+
+    const erreur = await connecterAvecEmail(email, motDePasse);
     setEnCours(false);
     if (erreur) {
-      Alert.alert(t("commun.erreur"), erreur);
+      alerter(t("commun.erreur") as string, erreur);
+    } else if (depuisLancement) {
+      navigation.replace("App");
     } else {
       navigation.goBack();
     }
@@ -40,6 +62,15 @@ export function ConnexionScreen() {
         {modeInscription ? t("compte.inscription") : t("compte.connexion")}
       </Text>
 
+      {modeInscription ? (
+        <TextInput
+          style={styles.input}
+          placeholder="Nom"
+          placeholderTextColor={colors.texteSecondaire}
+          value={nom}
+          onChangeText={setNom}
+        />
+      ) : null}
       <TextInput
         style={styles.input}
         placeholder={t("compte.email") as string}
@@ -74,7 +105,7 @@ export function ConnexionScreen() {
         style={styles.boutonInvite}
         onPress={() => {
           continuerEnInvite();
-          navigation.goBack();
+          depuisLancement ? navigation.replace("App") : navigation.goBack();
         }}
       >
         <Text style={styles.boutonInviteTexte}>{t("compte.continuerInvite")}</Text>

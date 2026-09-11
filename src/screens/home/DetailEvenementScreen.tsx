@@ -3,8 +3,9 @@ import { useRoute } from "@react-navigation/native";
 import * as Calendar from "expo-calendar";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { evenements } from "@/data/sampleData";
+import { alerter } from "@/lib/alerte";
 import { colors, espacement, rayon } from "@/theme/colors";
 
 export function DetailEvenementScreen() {
@@ -17,7 +18,7 @@ export function DetailEvenementScreen() {
     try {
       const { status } = await Calendar.requestCalendarPermissions();
       if (status !== "granted") {
-        Alert.alert(t("erreur") as string);
+        alerter(t("erreur") as string);
         return;
       }
       const calendriers = await Calendar.getCalendars(Calendar.EntityTypes.EVENT);
@@ -30,7 +31,7 @@ export function DetailEvenementScreen() {
         timeZone: evenement.fuseauHoraire,
         location: evenement.lieu,
       });
-      Alert.alert(evenement.titre, t("evenements.ajouterCalendrier") as string);
+      alerter(evenement.titre, t("evenements.ajouterCalendrier") as string);
     } catch {
       // L'ajout au calendrier n'est pas disponible sur cette plateforme.
     }

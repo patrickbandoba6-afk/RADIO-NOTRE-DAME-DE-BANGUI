@@ -149,6 +149,7 @@ export interface UtilisateurProfil {
   email?: string;
   telephone?: string;
   pays?: string;
+  photoUrl?: string;
   langue: Langue;
   estInvite: boolean;
 }
@@ -162,6 +163,15 @@ export interface DonHistorique {
 }
 
 export type PisteAudioType = "direct" | "podcast" | "predication";
+
+export type RadioStatus =
+  | "idle"
+  | "loading"
+  | "playing"
+  | "paused"
+  | "reconnecting"
+  | "error"
+  | "stopped";
 
 export interface PisteEnCours {
   type: PisteAudioType;

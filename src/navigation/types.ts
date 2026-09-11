@@ -65,6 +65,18 @@ export type PileMenu = {
   Communiques: undefined;
   Paroisses: undefined;
   Communaute: undefined;
+  MentionsLegales: undefined;
+  Admin: undefined;
+  MonProfil: undefined;
+};
+
+/** Pile affichée avant l'application : logo, puis inscription ou mode admin. */
+export type PileLancement = {
+  Intro: undefined;
+  Choix: undefined;
+  Inscription: undefined;
+  Connexion: { depuisLancement?: boolean } | undefined;
+  App: undefined;
 };
 
 /**

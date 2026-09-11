@@ -153,6 +153,18 @@ export function MenuScreen() {
       libelle: "Paramètres",
       onPress: () => navigation.navigate("Parametres"),
     },
+    {
+      cle: "mentionsLegales",
+      icone: "document-text-outline",
+      libelle: "Mentions légales",
+      onPress: () => navigation.navigate("MentionsLegales"),
+    },
+    {
+      cle: "admin",
+      icone: "shield-checkmark-outline",
+      libelle: "Espace administrateur",
+      onPress: () => navigation.navigate("Admin"),
+    },
   ];
 
   return (
@@ -173,9 +185,17 @@ export function MenuScreen() {
 
       <TouchableOpacity
         style={styles.carteProfil}
-        onPress={() => navigation.navigate(utilisateur ? "Parametres" : "Connexion")}
+        onPress={() =>
+          navigation.navigate(
+            utilisateur && !utilisateur.estInvite ? "MonProfil" : "Connexion"
+          )
+        }
       >
-        <Ionicons name="person-circle" size={44} color={colors.primaire} />
+        {utilisateur && !utilisateur.estInvite && utilisateur.photoUrl ? (
+          <Image source={{ uri: utilisateur.photoUrl }} style={styles.avatarProfil} />
+        ) : (
+          <Ionicons name="person-circle" size={44} color={colors.primaire} />
+        )}
         <View style={{ flex: 1 }}>
           <Text style={styles.nomUtilisateur}>
             {utilisateur ? utilisateur.nom : "Se connecter"}
@@ -184,7 +204,7 @@ export function MenuScreen() {
             {utilisateur?.estInvite
               ? "Mode invité"
               : utilisateur
-              ? "Compte synchronisé"
+              ? "Voir et modifier mon profil"
               : "Retrouvez vos favoris sur tous vos appareils"}
           </Text>
         </View>
@@ -206,6 +226,7 @@ export function MenuScreen() {
         {config.institution} · Depuis le {config.premieresEmissions}
       </Text>
       <Text style={styles.pied}>« {config.slogan} »</Text>
+      <Text style={styles.pied}>Développé par Agence Web et Marketing — succursale de GLOBALY_JC</Text>
     </ScrollView>
   );
 }
@@ -252,6 +273,7 @@ const styles = StyleSheet.create({
     padding: espacement.md,
     marginHorizontal: espacement.md,
   },
+  avatarProfil: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.fondClair },
   nomUtilisateur: { color: colors.texte, fontSize: 15, fontWeight: "700" },
   sousTitreProfil: { color: colors.texteSecondaire, fontSize: 12, marginTop: 2 },
   section: { marginTop: espacement.lg },

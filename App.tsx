@@ -9,6 +9,7 @@ import { PlayerProvider } from "@/context/PlayerContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import { TelechargementsProvider } from "@/context/TelechargementsContext";
 import { initialiserI18n } from "@/i18n";
+import { enregistrerVisite } from "@/lib/analytics";
 import { demanderPermissionNotifications } from "@/lib/notifications";
 import { RootNavigator } from "@/navigation/RootNavigator";
 
@@ -21,6 +22,7 @@ export default function App() {
     (async () => {
       await initialiserI18n();
       await demanderPermissionNotifications().catch(() => {});
+      enregistrerVisite();
       setPret(true);
     })();
   }, []);

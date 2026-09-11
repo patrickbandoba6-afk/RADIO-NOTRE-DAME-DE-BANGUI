@@ -37,6 +37,7 @@
     "enDirect24h": "Live radio — 24/7",
     "lecture": "Play",
     "pause": "Pause",
+    "arreter": "Stop",
     "connexion": "Connecting to stream…",
     "reconnexion": "Reconnecting…",
     "horsLigne": "No network connection",

@@ -1,11 +1,39 @@
+import * as Clipboard from "expo-clipboard";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { donsHistorique } from "@/data/sampleData";
+import { config } from "@/lib/config";
 import { colors, espacement, rayon } from "@/theme/colors";
 
 const MONTANTS = [5, 10, 20, 50, 100];
 const DEVISES = ["EUR", "USD", "XAF"];
+
+function LigneCode({
+  libelle,
+  valeur,
+  cle,
+  champCopie,
+  onCopier,
+}: {
+  libelle: string;
+  valeur: string;
+  cle: string;
+  champCopie: string | null;
+  onCopier: (cle: string, valeur: string) => void;
+}) {
+  return (
+    <View style={styles.ligneCode}>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.ligneCodeLibelle}>{libelle}</Text>
+        <Text style={styles.ligneCodeValeur}>{valeur}</Text>
+      </View>
+      <TouchableOpacity style={styles.boutonCopier} onPress={() => onCopier(cle, valeur)}>
+        <Text style={styles.boutonCopierTexte}>{champCopie === cle ? "Copié" : "Copier"}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 export function DonsScreen() {
   const { t } = useTranslation();
@@ -13,11 +41,16 @@ export function DonsScreen() {
   const [montantPersonnalise, setMontantPersonnalise] = useState("");
   const [devise, setDevise] = useState("EUR");
   const [recurrent, setRecurrent] = useState(false);
+  const [champCopie, setChampCopie] = useState<string | null>(null);
+  const [methodePaiement, setMethodePaiement] = useState<"mobile" | "banque" | null>(null);
 
-  function faireLeDon() {
-    const valeur = montantPersonnalise ? Number(montantPersonnalise) : montant;
-    if (!valeur || valeur <= 0) return;
-    Alert.alert(t("dons.merci") as string, `${valeur} ${devise}`);
+  const valeurChoisie = montantPersonnalise ? Number(montantPersonnalise) : montant;
+  const montantAffiche = valeurChoisie > 0 ? `${valeurChoisie} ${devise}` : null;
+
+  async function copier(cle: string, valeur: string) {
+    await Clipboard.setStringAsync(valeur);
+    setChampCopie(cle);
+    setTimeout(() => setChampCopie((actuel) => (actuel === cle ? null : actuel)), 1500);
   }
 
   return (
@@ -84,18 +117,90 @@ export function DonsScreen() {
       </View>
 
       <Text style={styles.sectionTitre}>{t("dons.moyenPaiement")}</Text>
+
       <View style={styles.puces}>
-        <View style={styles.puceInfo}>
-          <Text style={styles.puceInfoTexte}>{t("dons.carteBancaire")}</Text>
-        </View>
-        <View style={styles.puceInfo}>
-          <Text style={styles.puceInfoTexte}>{t("dons.mobileMoney")}</Text>
-        </View>
+        {config.donsOrangeUssd && config.donsOrangeCodeMarchand ? (
+          <TouchableOpacity
+            style={[styles.puceType, methodePaiement === "mobile" && styles.puceTypeActive]}
+            onPress={() => setMethodePaiement(methodePaiement === "mobile" ? null : "mobile")}
+          >
+            <Text
+              style={[styles.puceTypeTexte, methodePaiement === "mobile" && styles.puceTypeTexteActif]}
+            >
+              Mobile Money
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+        {config.donsBanqueNom && config.donsBanqueCompte ? (
+          <TouchableOpacity
+            style={[styles.puceType, methodePaiement === "banque" && styles.puceTypeActive]}
+            onPress={() => setMethodePaiement(methodePaiement === "banque" ? null : "banque")}
+          >
+            <Text
+              style={[styles.puceTypeTexte, methodePaiement === "banque" && styles.puceTypeTexteActif]}
+            >
+              Virement bancaire
+            </Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
-      <TouchableOpacity style={styles.boutonDon} onPress={faireLeDon}>
-        <Text style={styles.boutonDonTexte}>{t("dons.titre")}</Text>
-      </TouchableOpacity>
+      {methodePaiement === "mobile" ? (
+        <View style={styles.cartePaiement}>
+          <Text style={styles.carteTitre}>Orange Money</Text>
+          {config.donsOrangeNumero ? (
+            <LigneCode
+              libelle="Numéro Orange Money de la radio"
+              valeur={config.donsOrangeNumero}
+              cle="numero"
+              champCopie={champCopie}
+              onCopier={copier}
+            />
+          ) : null}
+          <LigneCode
+            libelle="Code USSD à composer"
+            valeur={config.donsOrangeUssd!}
+            cle="ussd"
+            champCopie={champCopie}
+            onCopier={copier}
+          />
+          <LigneCode
+            libelle="Code marchand"
+            valeur={config.donsOrangeCodeMarchand!}
+            cle="marchand"
+            champCopie={champCopie}
+            onCopier={copier}
+          />
+          <Text style={styles.instructionPaiement}>
+            Vous pouvez soit envoyer directement au numéro Orange Money ci-dessus, soit composer
+            le code, entrez le code marchand, puis{" "}
+            {montantAffiche ? `le montant (${montantAffiche})` : "le montant de votre don"} et
+            votre code secret Orange Money.
+          </Text>
+        </View>
+      ) : null}
+
+      {methodePaiement === "banque" ? (
+        <View style={styles.cartePaiement}>
+          <Text style={styles.carteTitre}>Virement bancaire</Text>
+          <LigneCode
+            libelle={`Compte ${config.donsBanqueNom}`}
+            valeur={config.donsBanqueCompte!}
+            cle="banque"
+            champCopie={champCopie}
+            onCopier={copier}
+          />
+          <Text style={styles.instructionPaiement}>
+            Indiquez « Don Radio Notre-Dame de Bangui » en référence de votre virement.
+          </Text>
+        </View>
+      ) : null}
+
+      {!methodePaiement ? (
+        <Text style={styles.notePaiement}>
+          Choisissez un moyen de paiement ci-dessus pour voir les informations à utiliser.
+        </Text>
+      ) : null}
 
       <Text style={styles.sectionTitre}>{t("dons.historiqueDons")}</Text>
       {donsHistorique.map((don) => (
@@ -132,16 +237,34 @@ const styles = StyleSheet.create({
     color: colors.texte,
     marginTop: espacement.sm,
   },
-  puceInfo: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: rayon.rond, backgroundColor: colors.fondClair },
-  puceInfoTexte: { color: colors.texteSecondaire, fontSize: 12 },
-  boutonDon: {
+  notePaiement: { color: colors.texteSecondaire, fontSize: 12, marginBottom: espacement.md, lineHeight: 17 },
+  cartePaiement: {
+    backgroundColor: colors.carte,
+    borderRadius: rayon.md,
+    padding: espacement.md,
+    marginBottom: espacement.sm,
+  },
+  carteTitre: { color: colors.primaire, fontSize: 14, fontWeight: "700", marginBottom: espacement.sm },
+  ligneCode: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espacement.sm,
+    backgroundColor: colors.fondClair,
+    borderRadius: rayon.sm,
+    paddingHorizontal: espacement.sm,
+    paddingVertical: 8,
+    marginBottom: espacement.sm,
+  },
+  ligneCodeLibelle: { color: colors.texteSecondaire, fontSize: 11 },
+  ligneCodeValeur: { color: colors.texte, fontSize: 16, fontWeight: "700", marginTop: 2 },
+  boutonCopier: {
     backgroundColor: colors.primaire,
     borderRadius: rayon.rond,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginTop: espacement.xl,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
-  boutonDonTexte: { color: colors.fond, fontWeight: "700", fontSize: 15 },
+  boutonCopierTexte: { color: colors.fond, fontSize: 12, fontWeight: "700" },
+  instructionPaiement: { color: colors.texteSecondaire, fontSize: 12, lineHeight: 17 },
   ligneHistorique: {
     flexDirection: "row",
     justifyContent: "space-between",

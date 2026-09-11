@@ -1,0 +1,376 @@
+<title>Flux Radio Direct</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B1F3A;
+    --ink-soft:#3C4E6B;
+    --paper:#FBF8F1;
+    --paper-raised:#FFFFFF;
+    --line:#E3DCC9;
+    --accent:#A9781F;
+    --accent-bg:#F3E9D2;
+    --accent-line:#D9C48F;
+    --bad:#9A3B3B;
+    --bad-bg:#F5E7E5;
+    --good:#2F6B4F;
+    --good-bg:#E6EFE7;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#F1ECE0;
+      --ink-soft:#B9C2D4;
+      --paper:#0F1520;
+      --paper-raised:#161E2C;
+      --line:#2A3346;
+      --accent:#E3B563;
+      --accent-bg:#241D0F;
+      --accent-line:#4A3A18;
+      --bad:#E58A8A;
+      --bad-bg:#2A1616;
+      --good:#7FC79A;
+      --good-bg:#122A1E;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#F1ECE0;
+    --ink-soft:#B9C2D4;
+    --paper:#0F1520;
+    --paper-raised:#161E2C;
+    --line:#2A3346;
+    --accent:#E3B563;
+    --accent-bg:#241D0F;
+    --accent-line:#4A3A18;
+    --bad:#E58A8A;
+    --bad-bg:#2A1616;
+    --good:#7FC79A;
+    --good-bg:#122A1E;
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Karla",system-ui,sans-serif;
+    font-size:16px;
+    line-height:1.55;
+  }
+  .page{
+    max-width:760px;
+    margin:0 auto;
+    padding:48px 24px 64px;
+  }
+
+  .entete{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:20px;
+    margin-bottom:28px;
+  }
+  .marque{ display:flex; align-items:center; gap:12px; }
+  .logo-lettre{
+    width:44px; height:44px;
+    border-radius:10px;
+    background:var(--ink);
+    color:var(--paper);
+    display:flex; align-items:center; justify-content:center;
+    font-family:"Lora",serif;
+    font-weight:700;
+    font-size:1.1rem;
+    flex-shrink:0;
+  }
+  .marque-texte h1{
+    margin:0;
+    font-family:"Lora",serif;
+    font-size:1.05rem;
+    font-weight:600;
+    letter-spacing:0.01em;
+  }
+  .marque-texte p{
+    margin:2px 0 0;
+    font-size:0.8rem;
+    color:var(--ink-soft);
+  }
+  .meta{ text-align:right; font-size:0.8rem; color:var(--ink-soft); }
+  .meta strong{ color:var(--ink); }
+
+  .objet{
+    font-family:"Lora",serif;
+    font-size:1.6rem;
+    font-weight:700;
+    text-wrap:balance;
+    margin:0 0 6px;
+  }
+  .sous-objet{
+    color:var(--ink-soft);
+    font-size:0.95rem;
+    margin:0 0 32px;
+  }
+
+  h2{
+    font-family:"Lora",serif;
+    font-size:1.15rem;
+    font-weight:600;
+    margin:36px 0 12px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--line);
+  }
+  p{ margin:0 0 14px; max-width:65ch; }
+  ul, ol{ margin:0 0 14px; padding-left:1.3em; }
+  li{ margin-bottom:6px; max-width:62ch; }
+  code{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:0.88em;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:1px 5px;
+  }
+
+  .constat{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin:16px 0 20px;
+  }
+  @media (max-width:560px){ .constat{ grid-template-columns:1fr; } }
+  .carte-constat{
+    border-radius:12px;
+    padding:16px 18px;
+    border:1px solid var(--line);
+  }
+  .carte-constat.mauvais{ background:var(--bad-bg); border-color:color-mix(in srgb, var(--bad) 35%, var(--line)); }
+  .carte-constat.bon{ background:var(--good-bg); border-color:color-mix(in srgb, var(--good) 35%, var(--line)); }
+  .carte-constat .etiquette{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:0.7rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    font-weight:600;
+    display:block;
+    margin-bottom:8px;
+  }
+  .carte-constat.mauvais .etiquette{ color:var(--bad); }
+  .carte-constat.bon .etiquette{ color:var(--good); }
+  .carte-constat p{ margin:0; font-size:0.92rem; }
+
+  .checklist{
+    list-style:none;
+    margin:0 0 20px;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .checklist li{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+    max-width:none;
+  }
+  .checklist .num{
+    flex-shrink:0;
+    width:22px; height:22px;
+    border-radius:50%;
+    background:var(--accent-bg);
+    border:1px solid var(--accent-line);
+    color:var(--accent);
+    font-family:"IBM Plex Mono",monospace;
+    font-size:0.72rem;
+    font-weight:600;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .checklist .contenu strong{ display:block; margin-bottom:2px; }
+  .checklist .contenu span{ color:var(--ink-soft); font-size:0.9rem; }
+
+  .citation{
+    background:var(--accent-bg);
+    border-left:3px solid var(--accent);
+    border-radius:0 10px 10px 0;
+    padding:16px 20px;
+    margin:16px 0 24px;
+    font-style:italic;
+    color:var(--ink);
+  }
+  .citation p{ margin:0 0 10px; max-width:none; }
+  .citation p:last-child{ margin-bottom:0; }
+
+  .alternatives{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:0 0 20px;
+  }
+  .puce-alt{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:0.8rem;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:5px 12px;
+  }
+
+  .pied{
+    margin-top:44px;
+    padding-top:18px;
+    border-top:1px solid var(--line);
+    font-size:0.82rem;
+    color:var(--ink-soft);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+
+  @media print{
+    body{ background:#fff; }
+    .page{ max-width:none; padding:0 8mm; }
+  }
+</style>
+
+<div class="page">
+  <div class="entete">
+    <div class="marque">
+      <div class="logo-lettre">RND</div>
+      <div class="marque-texte">
+        <h1>Radio Notre-Dame de Bangui</h1>
+        <p>Application mobile — 103.3 FM</p>
+      </div>
+    </div>
+    <div class="meta">
+      <div><strong>À :</strong> Direction Générale</div>
+      <div><strong>Pour action :</strong> Service technique</div>
+      <div id="date-note"></div>
+    </div>
+  </div>
+
+  <p class="objet">Lien de flux radio direct requis pour l'application mobile</p>
+  <p class="sous-objet">Note technique — ce qui manque aujourd'hui pour que l'écoute en direct fonctionne de façon fiable dans l'application</p>
+
+  <h2>Contexte</h2>
+  <p>
+    L'application mobile de Radio Notre-Dame de Bangui est en cours de finalisation.
+    Toutes les fonctionnalités sont prêtes (actualités, agenda, podcasts, prières…),
+    mais <strong>l'écoute en direct de la radio ne fonctionne pas encore de façon fiable</strong>
+    sur téléphone. Après des tests techniques approfondis, la cause est identifiée :
+    elle ne dépend pas de l'application, mais du lien audio actuellement disponible.
+  </p>
+
+  <h2>Constat</h2>
+  <div class="constat">
+    <div class="carte-constat mauvais">
+      <span class="etiquette">Situation actuelle</span>
+      <p>
+        Le seul lien disponible est généré automatiquement par le lecteur web
+        (« widget ») intégré sur le site de la station. Ce lien change à chaque
+        fois qu'il est consulté et n'est pas prévu pour être utilisé par une
+        application tierce.
+      </p>
+    </div>
+    <div class="carte-constat bon">
+      <span class="etiquette">Ce qu'il faut</span>
+      <p>
+        Un lien d'écoute <strong>direct et permanent</strong>, qui ne change jamais,
+        conçu pour être branché une seule fois dans une application et fonctionner
+        durablement.
+      </p>
+    </div>
+  </div>
+  <p>
+    Ce type de lien fixe n'est généralement fourni qu'à partir d'un forfait
+    payant chez l'hébergeur de streaming actuel (Caster.fm) — l'offre gratuite
+    ne propose que le lecteur widget grand public.
+  </p>
+
+  <h2>Ce qu'il faut demander au technicien</h2>
+  <ul class="checklist">
+    <li>
+      <span class="num">1</span>
+      <span class="contenu">
+        <strong>Le « Direct Stream Link » / lien d'écoute direct</strong>
+        <span>Fixe et permanent — pas un lien généré par le widget du site.</span>
+      </span>
+    </li>
+    <li>
+      <span class="num">2</span>
+      <span class="contenu">
+        <strong>Confirmation qu'aucun jeton temporaire n'est requis</strong>
+        <span>Le lien ne doit pas contenir de code d'accès qui expire ou se renouvelle.</span>
+      </span>
+    </li>
+    <li>
+      <span class="num">3</span>
+      <span class="contenu">
+        <strong>Confirmation du format audio</strong>
+        <span>MP3, 128 kbps, 44.1 kHz stéréo — c'est déjà le cas actuellement, à vérifier que ça reste identique.</span>
+      </span>
+    </li>
+    <li>
+      <span class="num">4</span>
+      <span class="contenu">
+        <strong>Si possible, une version sécurisée du lien (HTTPS)</strong>
+        <span>Le lien actuel est en HTTP simple ; une version HTTPS simplifierait l'intégration sur iPhone.</span>
+      </span>
+    </li>
+  </ul>
+
+  <h2>Message à transmettre au technicien ou au support Caster.fm</h2>
+  <div class="citation">
+    <p>
+      « Nous développons une application mobile pour Radio Notre-Dame de Bangui
+      et avons besoin d'un lien de flux audio <strong>direct et permanent</strong>
+      (pas le lien du lecteur widget, qui change à chaque session). »
+    </p>
+    <p>
+      « Le lien doit être en MP3, sans jeton d'authentification temporaire. Le
+      forfait gratuit actuel semble ne pas le permettre — merci de nous indiquer
+      la marche à suivre, ou si un changement de forfait est nécessaire. »
+    </p>
+  </div>
+
+  <h2>Si Caster.fm ne peut pas fournir ce lien</h2>
+  <p>
+    D'autres hébergeurs de streaming radio sont conçus dès le départ pour ce
+    genre d'usage et fournissent ce lien fixe sans démarche particulière :
+  </p>
+  <div class="alternatives">
+    <span class="puce-alt">Zeno.FM</span>
+    <span class="puce-alt">Radio.co</span>
+    <span class="puce-alt">StreamGuys</span>
+    <span class="puce-alt">AzuraCast</span>
+  </div>
+  <p>
+    Un changement d'hébergeur resterait simple côté application : seule
+    l'adresse du flux change, aucune autre modification n'est nécessaire.
+  </p>
+
+  <h2>Prochaine étape</h2>
+  <p>
+    Dès que ce lien direct et permanent est obtenu, il peut être intégré et
+    testé dans l'application en quelques minutes. C'est aujourd'hui le seul
+    point bloquant avant la mise en service complète de l'écoute en direct.
+  </p>
+
+  <div class="pied">
+    <span>Développé par Agence Web et Marketing — succursale de GLOBALY_JC</span>
+    <span id="date-pied"></span>
+  </div>
+</div>
+
+<script>
+  var maintenant = new Date();
+  var options = { day: "numeric", month: "long", year: "numeric" };
+  var texteDate = maintenant.toLocaleDateString("fr-FR", options);
+  document.getElementById("date-note").textContent = texteDate;
+  document.getElementById("date-pied").textContent = texteDate;
+</script>

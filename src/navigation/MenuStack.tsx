@@ -16,7 +16,10 @@ import { CommuniquesScreen } from "@/screens/menu/CommuniquesScreen";
 import { ContactScreen } from "@/screens/menu/ContactScreen";
 import { DossiersScreen } from "@/screens/menu/DossiersScreen";
 import { HistoriqueScreen } from "@/screens/menu/HistoriqueScreen";
+import { MonProfilScreen } from "@/screens/compte/MonProfilScreen";
+import { AdminScreen } from "@/screens/menu/AdminScreen";
 import { HomeliesScreen } from "@/screens/menu/HomeliesScreen";
+import { MentionsLegalesScreen } from "@/screens/menu/MentionsLegalesScreen";
 import { MenuScreen } from "@/screens/menu/MenuScreen";
 import { ParoissesScreen } from "@/screens/menu/ParoissesScreen";
 import { BibleScreen } from "@/screens/prier/BibleScreen";
@@ -62,6 +65,13 @@ export function MenuStack() {
       <Stack.Screen name="Communiques" component={CommuniquesScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Paroisses" component={ParoissesScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Communaute" component={CommunauteScreen} options={{ title: "Communauté" }} />
+      <Stack.Screen
+        name="MentionsLegales"
+        component={MentionsLegalesScreen}
+        options={{ title: "Mentions légales" }}
+      />
+      <Stack.Screen name="Admin" component={AdminScreen} options={{ title: "Espace administrateur" }} />
+      <Stack.Screen name="MonProfil" component={MonProfilScreen} options={{ title: "Mon profil" }} />
     </Stack.Navigator>
   );
 }

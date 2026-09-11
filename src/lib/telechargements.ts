@@ -1,8 +1,17 @@
+import { Platform } from "react-native";
 import { Directory, File, Paths } from "expo-file-system";
 
-export const dossierTelechargements = new Directory(Paths.document, "telechargements");
+// expo-file-system n'est pas supporté sur le web : toute construction de
+// Directory/File y échoue immédiatement. Les téléchargements hors-ligne
+// n'ont pas de sens dans un navigateur, donc ces fonctions n'y font rien.
+const SUPPORTE = Platform.OS !== "web";
+
+export const dossierTelechargements = SUPPORTE
+  ? new Directory(Paths.document, "telechargements")
+  : (null as unknown as Directory);
 
 export function assurerDossierTelechargements() {
+  if (!SUPPORTE) return;
   if (!dossierTelechargements.exists) {
     dossierTelechargements.create({ intermediates: true, idempotent: true });
   }
@@ -14,16 +23,19 @@ export function fichierPour(id: string, audioUrl: string): File {
 }
 
 export function fichierExisteEncore(uri: string): { exists: boolean; size?: number } {
+  if (!SUPPORTE) return { exists: false };
   const fichier = new File(uri);
   return { exists: fichier.exists, size: fichier.exists ? fichier.size : undefined };
 }
 
 export function supprimerFichier(uri: string) {
+  if (!SUPPORTE) return;
   const fichier = new File(uri);
   if (fichier.exists) fichier.delete();
 }
 
 export function tailleDossierTelechargements(): number {
+  if (!SUPPORTE) return 0;
   assurerDossierTelechargements();
   return dossierTelechargements
     .list()

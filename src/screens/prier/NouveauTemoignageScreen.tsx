@@ -2,7 +2,6 @@ import { useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Switch,
@@ -11,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { alerter } from "@/lib/alerte";
 import { colors, espacement, rayon } from "@/theme/colors";
 import type { TypeTemoignage } from "@/types";
 
@@ -25,7 +25,7 @@ export function NouveauTemoignageScreen() {
 
   function envoyer() {
     if (!contenu.trim() || !consentement) return;
-    Alert.alert(t("temoignages.partagerTemoignage"), t("temoignages.enAttenteValidation"));
+    alerter(t("temoignages.partagerTemoignage"), t("temoignages.enAttenteValidation"));
     navigation.goBack();
   }
 

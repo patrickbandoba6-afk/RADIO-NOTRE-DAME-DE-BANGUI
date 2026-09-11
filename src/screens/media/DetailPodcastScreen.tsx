@@ -3,11 +3,12 @@ import { useRoute } from "@react-navigation/native";
 import * as Sharing from "expo-sharing";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useFavoris } from "@/context/FavorisContext";
 import { usePlayer } from "@/context/PlayerContext";
 import { useTelechargements } from "@/context/TelechargementsContext";
 import { podcasts } from "@/data/sampleData";
+import { alerter } from "@/lib/alerte";
 import { colors, espacement, rayon } from "@/theme/colors";
 
 const VITESSES = [0.75, 1, 1.25, 1.5, 2];
@@ -39,7 +40,7 @@ export function DetailPodcastScreen() {
 
   useEffect(() => {
     if (erreurWifiRequis) {
-      Alert.alert(t("commun.erreur") as string, erreurWifiRequis);
+      alerter(t("commun.erreur") as string, erreurWifiRequis);
       effacerErreur();
     }
   }, [erreurWifiRequis, effacerErreur, t]);

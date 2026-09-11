@@ -15,8 +15,16 @@ import { LiveBadge } from "@/components/LiveBadge";
 import { usePlayer } from "@/context/PlayerContext";
 import { emissionActuelle, emissionSuivante } from "@/data/sampleData";
 import { config } from "@/lib/config";
+import { ouvrirLien } from "@/lib/format";
 import { colors, espacement, rayon } from "@/theme/colors";
 import type { QualiteAudio } from "@/types";
+
+const RESEAUX_LIVE = [
+  { cle: "liveFacebook" as const, icone: "logo-facebook" as const, libelle: "Facebook" },
+  { cle: "liveYoutube" as const, icone: "logo-youtube" as const, libelle: "YouTube" },
+  { cle: "liveInstagram" as const, icone: "logo-instagram" as const, libelle: "Instagram" },
+  { cle: "liveTiktok" as const, icone: "logo-tiktok" as const, libelle: "TikTok" },
+];
 
 const MINUTEURS = [15, 30, 45, 60];
 const QUALITES: QualiteAudio[] = ["eco", "standard", "haute"];
@@ -29,6 +37,7 @@ export function LiveScreen() {
     enMemoireTampon,
     enReconnexion,
     erreur,
+    statut,
     qualiteAudio,
     minuteurSommeilMinutes,
     titreEnCours,
@@ -36,6 +45,7 @@ export function LiveScreen() {
     lireDirect,
     mettreEnPause,
     reprendre,
+    arreter,
     definirQualiteAudio,
     definirMinuteurSommeil,
   } = usePlayer();
@@ -84,39 +94,72 @@ export function LiveScreen() {
       </View>
 
       <View style={styles.zoneStatut}>
-        {enReconnexion ? (
-          <Text style={styles.statutTexte}>{t("lecteur.reconnexion")}</Text>
-        ) : erreur && estEnDirectActif ? (
+        {statut === "error" && estEnDirectActif ? (
           <View style={styles.zoneErreur}>
-            <Text style={styles.erreurTexte}>
-              Le direct est temporairement indisponible.
-            </Text>
+            <View style={styles.ligneStatutPoint}>
+              <View style={[styles.pointStatut, { backgroundColor: colors.danger }]} />
+              <Text style={styles.erreurTexte}>
+                {erreur === "Le flux radio n'est pas encore configuré."
+                  ? erreur
+                  : "Le direct est temporairement indisponible."}
+              </Text>
+            </View>
             <TouchableOpacity style={styles.boutonReessayer} onPress={lireDirect}>
               <Text style={styles.boutonReessayerTexte}>{t("commun.reessayer")}</Text>
             </TouchableOpacity>
           </View>
-        ) : enMemoireTampon && estEnDirectActif ? (
-          <Text style={styles.statutTexte}>{t("lecteur.connexion")}</Text>
-        ) : etatServeur && !etatServeur.enLigne ? (
-          <Text style={styles.statutTexte}>
-            Le serveur radio est momentanément indisponible.
-          </Text>
         ) : (
-          <Text style={styles.statutTexte}>{t("lecteur.enDirect24h")}</Text>
+          <View style={styles.ligneStatutPoint}>
+            <View
+              style={[
+                styles.pointStatut,
+                {
+                  backgroundColor:
+                    statut === "reconnecting" || statut === "loading"
+                      ? colors.attente
+                      : statut === "playing" && estEnDirectActif
+                        ? colors.succes
+                        : colors.texteSecondaire,
+                },
+              ]}
+            />
+            <Text style={styles.statutTexte}>
+              {statut === "reconnecting"
+                ? t("lecteur.reconnexion")
+                : statut === "loading" && estEnDirectActif
+                  ? t("lecteur.connexion")
+                  : etatServeur && !etatServeur.enLigne
+                    ? "Le serveur radio est momentanément indisponible."
+                    : t("lecteur.enDirect24h")}
+            </Text>
+          </View>
         )}
       </View>
 
-      <TouchableOpacity style={styles.boutonPrincipal} onPress={basculer} activeOpacity={0.85}>
-        {enMemoireTampon || enReconnexion ? (
-          <ActivityIndicator color={colors.fond} size="large" />
-        ) : (
-          <Ionicons
-            name={enTrainDeJouer ? "pause" : "play"}
-            size={44}
-            color={colors.fond}
-          />
-        )}
-      </TouchableOpacity>
+      <View style={styles.rangeeBoutons}>
+        <TouchableOpacity style={styles.boutonPrincipal} onPress={basculer} activeOpacity={0.85}>
+          {enMemoireTampon || enReconnexion ? (
+            <ActivityIndicator color={colors.fond} size="large" />
+          ) : (
+            <Ionicons
+              name={enTrainDeJouer ? "pause" : "play"}
+              size={44}
+              color={colors.fond}
+            />
+          )}
+        </TouchableOpacity>
+
+        {estEnDirectActif ? (
+          <TouchableOpacity
+            style={styles.boutonArreter}
+            onPress={arreter}
+            activeOpacity={0.85}
+            accessibilityLabel={t("lecteur.arreter")}
+          >
+            <Ionicons name="stop" size={26} color={colors.texteSecondaire} />
+          </TouchableOpacity>
+        ) : null}
+      </View>
 
       <View style={styles.actionsSecondaires}>
         <TouchableOpacity
@@ -138,6 +181,23 @@ export function LiveScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {RESEAUX_LIVE.some((r) => config[r.cle]) ? (
+        <View style={styles.blocReseaux}>
+          <Text style={styles.titreReseaux}>Suivez aussi le direct sur nos réseaux</Text>
+          <View style={styles.ligneReseaux}>
+            {RESEAUX_LIVE.filter((r) => config[r.cle]).map((r) => (
+              <TouchableOpacity
+                key={r.cle}
+                style={styles.boutonReseau}
+                onPress={() => ouvrirLien(config[r.cle]!)}
+              >
+                <Ionicons name={r.icone} size={22} color={colors.primaire} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      ) : null}
 
       <ModalChoix
         visible={modalQualiteVisible}
@@ -230,6 +290,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: espacement.lg,
   },
   zoneStatut: { marginTop: espacement.lg, minHeight: 20, alignItems: "center" },
+  ligneStatutPoint: { flexDirection: "row", alignItems: "center", gap: 7 },
+  pointStatut: { width: 7, height: 7, borderRadius: 4 },
   statutTexte: { color: colors.texteSecondaire, fontSize: 13 },
   zoneErreur: { alignItems: "center", gap: espacement.sm },
   erreurTexte: { color: colors.danger, fontSize: 13, textAlign: "center" },
@@ -240,6 +302,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   boutonReessayerTexte: { color: colors.primaire, fontSize: 12, fontWeight: "700" },
+  rangeeBoutons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espacement.lg,
+    marginTop: espacement.md,
+  },
   boutonPrincipal: {
     width: 84,
     height: 84,
@@ -247,7 +315,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaire,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: espacement.md,
+  },
+  boutonArreter: {
+    width: 48,
+    height: 48,
+    borderRadius: rayon.rond,
+    backgroundColor: colors.carte,
+    alignItems: "center",
+    justifyContent: "center",
   },
   actionsSecondaires: {
     flexDirection: "row",
@@ -256,6 +331,17 @@ const styles = StyleSheet.create({
   },
   actionSecondaire: { alignItems: "center", gap: 6 },
   actionSecondaireTexte: { color: colors.texteSecondaire, fontSize: 11 },
+  blocReseaux: { alignItems: "center", marginTop: espacement.xl },
+  titreReseaux: { color: colors.texteSecondaire, fontSize: 12, marginBottom: espacement.sm },
+  ligneReseaux: { flexDirection: "row", gap: espacement.md },
+  boutonReseau: {
+    width: 42,
+    height: 42,
+    borderRadius: rayon.rond,
+    backgroundColor: colors.carte,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   modalFond: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
   modalContenu: {
     backgroundColor: colors.carte,
