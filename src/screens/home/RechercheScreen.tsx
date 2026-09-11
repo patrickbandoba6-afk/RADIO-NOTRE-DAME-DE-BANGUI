@@ -41,13 +41,13 @@ export function RechercheScreen() {
   function ouvrir(item: ResultatRecherche) {
     switch (item.type) {
       case "podcast":
-        navigation.navigate("MediaStack", { screen: "DetailPodcast", params: { id: item.id } });
+        navigation.navigate("PodcastsStack", { screen: "DetailPodcast", params: { id: item.id } });
         break;
       case "predication":
-        navigation.navigate("MediaStack", { screen: "DetailPredication", params: { id: item.id } });
+        navigation.navigate("PodcastsStack", { screen: "DetailPredication", params: { id: item.id } });
         break;
       case "video":
-        navigation.navigate("MediaStack", { screen: "LecteurVideo", params: { id: item.id } });
+        navigation.navigate("PodcastsStack", { screen: "LecteurVideo", params: { id: item.id } });
         break;
       case "evenement":
         navigation.navigate("DetailEvenement", { id: item.id });

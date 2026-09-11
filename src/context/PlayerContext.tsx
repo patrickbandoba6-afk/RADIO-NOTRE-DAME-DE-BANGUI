@@ -13,7 +13,12 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { config } from "@/lib/config";
+import { config, fluxDisponibles } from "@/lib/config";
+import {
+  libelleEnCours,
+  recupererEtatServeur,
+  type EtatServeurRadio,
+} from "@/lib/radioMetadata";
 import type { PisteEnCours, QualiteAudio } from "@/types";
 
 interface PlayerContextValeur {
@@ -28,6 +33,9 @@ interface PlayerContextValeur {
   qualiteAudio: QualiteAudio;
   minuteurSommeilMinutes: number | null;
   vitesseLecture: number;
+  /** Titre transmis par la régie (métadonnée ICY), sinon libellé de repli. */
+  titreEnCours: string;
+  etatServeur: EtatServeurRadio | null;
   lireDirect: () => void;
   lirePiste: (piste: PisteEnCours) => void;
   mettreEnPause: () => void;
@@ -45,12 +53,13 @@ const PISTE_DIRECT: PisteEnCours = {
   type: "direct",
   id: "direct",
   titre: config.nomOfficiel,
-  sousTitre: config.signature,
+  sousTitre: `${config.frequence} · ${config.ville}`,
   imageUrl: "https://picsum.photos/seed/rndb-direct/800/800",
   audioUrl: config.radioStreamUrl,
 };
 
 const NB_MAX_TENTATIVES_RECONNEXION = 6;
+const INTERVALLE_METADONNEES_MS = 20000;
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const playerRef = useRef<AudioPlayer | null>(null);
@@ -66,8 +75,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [minuteurSommeilMinutes, setMinuteurSommeilMinutesState] = useState<
     number | null
   >(null);
+  const [etatServeur, setEtatServeur] = useState<EtatServeurRadio | null>(null);
 
   const tentativesReconnexion = useRef(0);
+  const indexFlux = useRef(0);
   const minuteurSommeilRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -103,7 +114,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   );
 
   const lireDirect = useCallback(() => {
-    chargerEtLire({ ...PISTE_DIRECT, audioUrl: config.radioStreamUrl });
+    indexFlux.current = 0;
+    chargerEtLire({ ...PISTE_DIRECT, audioUrl: fluxDisponibles[0] ?? config.radioStreamUrl });
   }, [chargerEtLire]);
 
   const lirePiste = useCallback(
@@ -166,15 +178,23 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     [player]
   );
 
-  // Reconnexion automatique du direct après une coupure réseau.
+  // Reconnexion automatique après une coupure réseau. Pour le direct, on
+  // bascule sur le flux de secours une tentative sur deux lorsqu'il existe.
   useEffect(() => {
     if (!pisteActuelle) return;
     if (status.error && tentativesReconnexion.current < NB_MAX_TENTATIVES_RECONNEXION) {
       setEnReconnexion(true);
       tentativesReconnexion.current += 1;
+
+      let uri = pisteActuelle.audioUrl;
+      if (pisteActuelle.type === "direct" && fluxDisponibles.length > 1) {
+        indexFlux.current = (indexFlux.current + 1) % fluxDisponibles.length;
+        uri = fluxDisponibles[indexFlux.current];
+      }
+
       const delai = Math.min(2000 * tentativesReconnexion.current, 15000);
       const identifiant = setTimeout(() => {
-        player.replace({ uri: pisteActuelle.audioUrl });
+        player.replace({ uri });
         player.play();
       }, delai);
       return () => clearTimeout(identifiant);
@@ -184,6 +204,27 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       tentativesReconnexion.current = 0;
     }
   }, [status.error, status.playing, pisteActuelle, player]);
+
+  // Titre en cours : sondage régulier du serveur pendant le direct.
+  useEffect(() => {
+    if (pisteActuelle?.type !== "direct") {
+      setEtatServeur(null);
+      return;
+    }
+    const controleur = new AbortController();
+    let identifiant: ReturnType<typeof setInterval> | null = null;
+
+    const sonder = () => {
+      recupererEtatServeur(controleur.signal).then(setEtatServeur);
+    };
+    sonder();
+    identifiant = setInterval(sonder, INTERVALLE_METADONNEES_MS);
+
+    return () => {
+      controleur.abort();
+      if (identifiant) clearInterval(identifiant);
+    };
+  }, [pisteActuelle?.type]);
 
   useEffect(() => {
     return () => {
@@ -204,6 +245,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       qualiteAudio,
       minuteurSommeilMinutes,
       vitesseLecture: status.playbackRate || 1,
+      titreEnCours: etatServeur ? libelleEnCours(etatServeur) : `En direct sur ${config.frequence}`,
+      etatServeur,
       lireDirect,
       lirePiste,
       mettreEnPause,
@@ -220,6 +263,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       enReconnexion,
       qualiteAudio,
       minuteurSommeilMinutes,
+      etatServeur,
       lireDirect,
       lirePiste,
       mettreEnPause,

@@ -193,6 +193,13 @@
     "recu": "Receipt",
     "merci": "Thank you for your generosity!"
   },
+  "favoris": {
+    "aucunFavori": "You don't have any favorites yet. Tap the heart on a podcast or sermon to add it here."
+  },
+  "telechargements": {
+    "aucunTelechargement": "No downloads yet. Download a podcast to listen offline.",
+    "espaceUtilise": "Storage used: {{taille}}"
+  },
   "parametres": {
     "titre": "Settings",
     "langue": "Language",

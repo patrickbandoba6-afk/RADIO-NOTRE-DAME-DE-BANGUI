@@ -193,6 +193,13 @@
     "recu": "Reçu",
     "merci": "Merci pour votre générosité !"
   },
+  "favoris": {
+    "aucunFavori": "Vous n'avez encore aucun favori. Appuyez sur le cœur d'un podcast ou d'une prédication pour l'ajouter ici."
+  },
+  "telechargements": {
+    "aucunTelechargement": "Aucun téléchargement pour le moment. Téléchargez un podcast pour l'écouter hors ligne.",
+    "espaceUtilise": "Espace utilisé : {{taille}}"
+  },
   "parametres": {
     "titre": "Paramètres",
     "langue": "Langue",

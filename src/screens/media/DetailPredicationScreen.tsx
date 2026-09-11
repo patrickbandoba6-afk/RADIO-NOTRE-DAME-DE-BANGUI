@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useFavoris } from "@/context/FavorisContext";
 import { usePlayer } from "@/context/PlayerContext";
 import { predications } from "@/data/sampleData";
 import { colors, espacement, rayon } from "@/theme/colors";
@@ -20,9 +21,10 @@ export function DetailPredicationScreen() {
   const route = useRoute<any>();
   const predication = predications.find((p) => p.id === route.params.id) ?? predications[0];
   const { pisteActuelle, enLecture, lirePiste, mettreEnPause, reprendre } = usePlayer();
+  const { estFavori, basculerFavori } = useFavoris();
   const [note, setNote] = useState("");
   const [notesEnregistrees, setNotesEnregistrees] = useState<string[]>([]);
-  const [marquePage, setMarquePage] = useState(false);
+  const marquePage = estFavori("predication", predication.id);
 
   const estActif = pisteActuelle?.id === predication.id;
 
@@ -66,7 +68,10 @@ export function DetailPredicationScreen() {
             {estActif && enLecture ? t("lecteur.pause") : t("lecteur.lecture")}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.boutonMarque} onPress={() => setMarquePage(!marquePage)}>
+        <TouchableOpacity
+          style={styles.boutonMarque}
+          onPress={() => basculerFavori("predication", predication.id)}
+        >
           <Ionicons
             name={marquePage ? "bookmark" : "bookmark-outline"}
             size={22}

@@ -27,9 +27,18 @@ export function CompteScreen() {
   }
 
   const items = [
-    { cle: "favoris", icone: "heart-outline" as const, libelle: t("compte.mesFavoris") },
-    { cle: "historique", icone: "time-outline" as const, libelle: t("compte.monHistorique") },
-    { cle: "telechargements", icone: "download-outline" as const, libelle: t("compte.mesTelechargements") },
+    {
+      cle: "favoris",
+      icone: "heart-outline" as const,
+      libelle: t("compte.mesFavoris"),
+      action: () => navigation.navigate("Favoris"),
+    },
+    {
+      cle: "telechargements",
+      icone: "download-outline" as const,
+      libelle: t("compte.mesTelechargements"),
+      action: () => navigation.navigate("Telechargements"),
+    },
     { cle: "dons", icone: "gift-outline" as const, libelle: t("dons.titre"), action: () => navigation.navigate("Dons") },
     { cle: "parametres", icone: "settings-outline" as const, libelle: t("parametres.titre"), action: () => navigation.navigate("Parametres") },
   ];

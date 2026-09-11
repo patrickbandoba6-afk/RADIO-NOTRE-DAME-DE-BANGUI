@@ -1,6 +1,18 @@
 # RADIO NOTRE DAME DE BANGUI
 
-> « La voix chrétienne de Bangui vers le monde »
+> « Entrez dans l'Espérance » — 103.3 FM, Bangui
+
+**Radio Notre-Dame de Bangui (RND Bangui)** est la radio de l'Archidiocèse de
+Bangui, diffusant sur **103.3 MHz FM** depuis le **4 janvier 1995**, en
+français et en sango.
+
+## Écoute en direct
+
+Le flux internet réellement utilisé par l'application est documenté dans
+[`docs/FLUX-RADIO.md`](./docs/FLUX-RADIO.md) : endpoint vérifié, codec, débit,
+métadonnées et variables de configuration. Aucune URL n'est inventée — toute
+la configuration passe par des variables d'environnement (voir `.env.example`),
+avec bascule automatique vers un flux de secours.
 
 Application mobile (iOS, Android, tablette, web) de la radio chrétienne
 **Radio Notre-Dame**, basée à Bangui (République centrafricaine), conçue pour
@@ -69,26 +81,42 @@ du contenu réel :
 3. Renseignez `EXPO_PUBLIC_RADIO_STREAM_URL` avec l'URL réelle du flux de
    streaming de la radio (Icecast, HLS, etc.).
 
+## Navigation de l'application
+
+Six onglets principaux, avec un mini-lecteur persistant :
+
+| Onglet | Contenu |
+| --- | --- |
+| **Accueil** | Direct, à la une, actualités, évangile du jour, podcasts, événements, annonces |
+| **Direct** | Lecteur radio plein écran, titre en cours, qualité, minuteur |
+| **Actus** | Actualités par rubrique (Bangui, RCA, Afrique, Monde, Vie de l'Église…) |
+| **Agenda** | Événements filtrés par période, annonces et communiqués |
+| **Podcasts** | Recherche, émissions, épisodes, prédications, vidéos, grille |
+| **Plus** | Mon espace, spiritualité, découvrir, contact, dons, paramètres |
+
 ## Structure du projet
 
 ```
 App.tsx                     Point d'entrée, initialisation (i18n, notifications, providers)
 src/
-  components/                Composants réutilisables (lecteur mini, cartes, grille d'accès rapide…)
-  context/                   État global : lecteur audio, authentification, préférences
-  data/                      Données d'exemple (à remplacer par Supabase)
+  components/                Composants réutilisables (mini-lecteur, cartes, filtres, états)
+  context/                   Lecteur audio, auth, favoris, téléchargements, historique, préférences
+  data/                      Données d'exemple (remplacées par Supabase dès qu'il est configuré)
+  hooks/                     useContenu — chargement asynchrone avec états
   i18n/                      Traductions français / anglais
-  lib/                       Client Supabase, configuration, notifications
-  navigation/                Navigation (onglets + piles par section)
-  screens/                   Écrans, organisés par domaine (media, prier, compte, home)
+  lib/                       config, Supabase, repository, flux radio, formats, téléchargements
+  navigation/                Onglets + une pile par section
+  screens/                   Écrans par domaine (actualites, agenda, media, prier, menu, compte)
   theme/                     Couleurs et constantes de style
-  types/                     Types TypeScript partagés
+  types/                     Types partagés (index.ts + editorial.ts)
 supabase/
-  schema.sql                 Schéma complet (tables, RLS)
+  schema.sql                 Schéma de base (émissions, podcasts, prière, dons, favoris…)
+  schema_editorial.sql       Module éditorial (articles, annonces, épisodes, grille, dossiers…)
   seed.sql                   Données de démonstration
 docs/
+  FLUX-RADIO.md              Source vérifiée du flux audio et configuration
+  ROADMAP.md                 Suivi de l'implémentation par phase
   cahier-des-charges/        Documents source du projet
-  ROADMAP.md                 Suivi détaillé de l'implémentation par phase
 ```
 
 ## Feuille de route

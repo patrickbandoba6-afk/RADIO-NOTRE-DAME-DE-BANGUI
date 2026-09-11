@@ -3,8 +3,11 @@ import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider } from "@/context/AuthContext";
+import { FavorisProvider } from "@/context/FavorisContext";
+import { HistoriqueProvider } from "@/context/HistoriqueContext";
 import { PlayerProvider } from "@/context/PlayerContext";
 import { SettingsProvider } from "@/context/SettingsContext";
+import { TelechargementsProvider } from "@/context/TelechargementsContext";
 import { initialiserI18n } from "@/i18n";
 import { demanderPermissionNotifications } from "@/lib/notifications";
 import { RootNavigator } from "@/navigation/RootNavigator";
@@ -40,10 +43,16 @@ export default function App() {
     <SafeAreaProvider>
       <SettingsProvider>
         <AuthProvider>
-          <PlayerProvider>
-            <StatusBar style="light" />
-            <RootNavigator />
-          </PlayerProvider>
+          <FavorisProvider>
+            <HistoriqueProvider>
+              <TelechargementsProvider>
+                <PlayerProvider>
+                  <StatusBar style="light" />
+                  <RootNavigator />
+                </PlayerProvider>
+              </TelechargementsProvider>
+            </HistoriqueProvider>
+          </FavorisProvider>
         </AuthProvider>
       </SettingsProvider>
     </SafeAreaProvider>

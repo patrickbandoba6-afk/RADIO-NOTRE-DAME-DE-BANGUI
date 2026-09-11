@@ -1,10 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 import * as Sharing from "expo-sharing";
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useFavoris } from "@/context/FavorisContext";
 import { usePlayer } from "@/context/PlayerContext";
+import { useTelechargements } from "@/context/TelechargementsContext";
 import { podcasts } from "@/data/sampleData";
 import { colors, espacement, rayon } from "@/theme/colors";
 
@@ -16,18 +18,57 @@ export function DetailPodcastScreen() {
   const podcast = podcasts.find((p) => p.id === route.params.id) ?? podcasts[0];
   const { pisteActuelle, enLecture, lirePiste, mettreEnPause, reprendre, vitesseLecture, definirVitesse } =
     usePlayer();
-  const [favori, setFavori] = useState(false);
-  const [telecharge, setTelecharge] = useState(false);
+  const { estFavori, basculerFavori } = useFavoris();
+  const {
+    estTelecharge,
+    progressionDe,
+    cheminLocalDe,
+    telecharger,
+    annuler,
+    supprimer,
+    erreurWifiRequis,
+    effacerErreur,
+  } = useTelechargements();
+
+  const favori = estFavori("podcast", podcast.id);
+  const telecharge = estTelecharge(podcast.id);
+  const progression = progressionDe(podcast.id);
+  const enTelechargement = progression > 0 && progression < 1 && !telecharge;
 
   const estActif = pisteActuelle?.id === podcast.id;
+
+  useEffect(() => {
+    if (erreurWifiRequis) {
+      Alert.alert(t("commun.erreur") as string, erreurWifiRequis);
+      effacerErreur();
+    }
+  }, [erreurWifiRequis, effacerErreur, t]);
 
   function basculerLecture() {
     if (estActif) {
       enLecture ? mettreEnPause() : reprendre();
     } else {
+      const cheminLocal = cheminLocalDe(podcast.id);
       lirePiste({
         type: "podcast",
         id: podcast.id,
+        titre: podcast.titre,
+        sousTitre: podcast.animateur,
+        imageUrl: podcast.imageUrl,
+        audioUrl: cheminLocal ?? podcast.audioUrl,
+      });
+    }
+  }
+
+  function basculerTelechargement() {
+    if (telecharge) {
+      supprimer(podcast.id);
+    } else if (enTelechargement) {
+      annuler(podcast.id);
+    } else {
+      telecharger({
+        id: podcast.id,
+        type: "podcast",
         titre: podcast.titre,
         sousTitre: podcast.animateur,
         imageUrl: podcast.imageUrl,
@@ -50,14 +91,24 @@ export function DetailPodcastScreen() {
       </TouchableOpacity>
 
       <View style={styles.ligneActions}>
-        <TouchableOpacity style={styles.action} onPress={() => setFavori(!favori)}>
+        <TouchableOpacity style={styles.action} onPress={() => basculerFavori("podcast", podcast.id)}>
           <Ionicons name={favori ? "heart" : "heart-outline"} size={20} color={colors.primaire} />
           <Text style={styles.actionTexte}>{t("commun.favoris")}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.action} onPress={() => setTelecharge(!telecharge)}>
-          <Ionicons name={telecharge ? "checkmark-circle" : "download-outline"} size={20} color={colors.primaire} />
+        <TouchableOpacity style={styles.action} onPress={basculerTelechargement}>
+          <Ionicons
+            name={
+              telecharge ? "checkmark-circle" : enTelechargement ? "close-circle-outline" : "download-outline"
+            }
+            size={20}
+            color={colors.primaire}
+          />
           <Text style={styles.actionTexte}>
-            {telecharge ? t("commun.telecharge") : t("commun.telecharger")}
+            {telecharge
+              ? t("commun.telecharge")
+              : enTelechargement
+              ? `${Math.round(progression * 100)}%`
+              : t("commun.telecharger")}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -71,6 +122,11 @@ export function DetailPodcastScreen() {
           <Text style={styles.actionTexte}>{t("commun.partager")}</Text>
         </TouchableOpacity>
       </View>
+      {enTelechargement ? (
+        <View style={styles.barreProgressionConteneur}>
+          <View style={[styles.barreProgression, { width: `${Math.round(progression * 100)}%` }]} />
+        </View>
+      ) : null}
 
       <Text style={styles.sectionTitre}>{t("podcasts.vitesseLecture")}</Text>
       <View style={styles.vitesses}>
@@ -112,6 +168,14 @@ const styles = StyleSheet.create({
   },
   boutonLectureTexte: { color: colors.fond, fontWeight: "700" },
   ligneActions: { flexDirection: "row", justifyContent: "space-around", marginTop: espacement.lg },
+  barreProgressionConteneur: {
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.carte,
+    marginTop: espacement.sm,
+    overflow: "hidden",
+  },
+  barreProgression: { height: "100%", backgroundColor: colors.primaire },
   action: { alignItems: "center", gap: 4 },
   actionTexte: { color: colors.texteSecondaire, fontSize: 11 },
   sectionTitre: { color: colors.texte, fontSize: 15, fontWeight: "700", marginTop: espacement.lg, marginBottom: espacement.sm },

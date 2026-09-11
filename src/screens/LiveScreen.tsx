@@ -14,6 +14,7 @@ import {
 import { LiveBadge } from "@/components/LiveBadge";
 import { usePlayer } from "@/context/PlayerContext";
 import { emissionActuelle, emissionSuivante } from "@/data/sampleData";
+import { config } from "@/lib/config";
 import { colors, espacement, rayon } from "@/theme/colors";
 import type { QualiteAudio } from "@/types";
 
@@ -27,9 +28,11 @@ export function LiveScreen() {
     enLecture,
     enMemoireTampon,
     enReconnexion,
-    estDirect,
+    erreur,
     qualiteAudio,
     minuteurSommeilMinutes,
+    titreEnCours,
+    etatServeur,
     lireDirect,
     mettreEnPause,
     reprendre,
@@ -56,8 +59,10 @@ export function LiveScreen() {
   return (
     <View style={styles.conteneur}>
       <View style={styles.entete}>
+        <Image source={require("../../assets/logo-rndb.png")} style={styles.logo} resizeMode="contain" />
         <LiveBadge />
-        <Text style={styles.nomStation}>RADIO NOTRE DAME DE BANGUI</Text>
+        <Text style={styles.nomStation}>{config.nomOfficiel}</Text>
+        <Text style={styles.frequence}>{config.frequence}</Text>
       </View>
 
       <Image
@@ -71,13 +76,31 @@ export function LiveScreen() {
         <Text style={styles.horaire}>
           {emissionActuelle.heureDebut} – {emissionActuelle.heureFin}
         </Text>
+        {estEnDirectActif ? (
+          <Text style={styles.titreEnCours} numberOfLines={2}>
+            {titreEnCours}
+          </Text>
+        ) : null}
       </View>
 
       <View style={styles.zoneStatut}>
         {enReconnexion ? (
           <Text style={styles.statutTexte}>{t("lecteur.reconnexion")}</Text>
+        ) : erreur && estEnDirectActif ? (
+          <View style={styles.zoneErreur}>
+            <Text style={styles.erreurTexte}>
+              Le direct est temporairement indisponible.
+            </Text>
+            <TouchableOpacity style={styles.boutonReessayer} onPress={lireDirect}>
+              <Text style={styles.boutonReessayerTexte}>{t("commun.reessayer")}</Text>
+            </TouchableOpacity>
+          </View>
         ) : enMemoireTampon && estEnDirectActif ? (
           <Text style={styles.statutTexte}>{t("lecteur.connexion")}</Text>
+        ) : etatServeur && !etatServeur.enLigne ? (
+          <Text style={styles.statutTexte}>
+            Le serveur radio est momentanément indisponible.
+          </Text>
         ) : (
           <Text style={styles.statutTexte}>{t("lecteur.enDirect24h")}</Text>
         )}
@@ -191,14 +214,32 @@ function ModalChoix({
 const styles = StyleSheet.create({
   conteneur: { flex: 1, backgroundColor: colors.fond, alignItems: "center", paddingTop: 60 },
   entete: { alignItems: "center", gap: 10, marginBottom: espacement.lg },
+  logo: { width: 96, height: 96, marginBottom: 4 },
   nomStation: { color: colors.texteSecondaire, fontSize: 12, fontWeight: "600", letterSpacing: 1 },
+  frequence: { color: colors.primaire, fontSize: 16, fontWeight: "800" },
   visuel: { width: 260, height: 260, borderRadius: rayon.lg, backgroundColor: colors.carte },
   infosEmission: { alignItems: "center", marginTop: espacement.lg },
   titreEmission: { color: colors.texte, fontSize: 22, fontWeight: "700" },
   animateur: { color: colors.texteSecondaire, fontSize: 14, marginTop: 4 },
   horaire: { color: colors.primaire, fontSize: 13, marginTop: 6 },
-  zoneStatut: { marginTop: espacement.lg, minHeight: 20 },
+  titreEnCours: {
+    color: colors.primaire,
+    fontSize: 13,
+    marginTop: espacement.sm,
+    textAlign: "center",
+    paddingHorizontal: espacement.lg,
+  },
+  zoneStatut: { marginTop: espacement.lg, minHeight: 20, alignItems: "center" },
   statutTexte: { color: colors.texteSecondaire, fontSize: 13 },
+  zoneErreur: { alignItems: "center", gap: espacement.sm },
+  erreurTexte: { color: colors.danger, fontSize: 13, textAlign: "center" },
+  boutonReessayer: {
+    backgroundColor: colors.carte,
+    borderRadius: rayon.rond,
+    paddingHorizontal: espacement.lg,
+    paddingVertical: 8,
+  },
+  boutonReessayerTexte: { color: colors.primaire, fontSize: 12, fontWeight: "700" },
   boutonPrincipal: {
     width: 84,
     height: 84,

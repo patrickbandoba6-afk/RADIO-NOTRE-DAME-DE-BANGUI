@@ -24,8 +24,10 @@
     },
     "android": {
       "package": "org.radionotredamedebangui.app",
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
-        "backgroundColor": "#0B1F3A"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
       },
       "permissions": [
         "android.permission.FOREGROUND_SERVICE",
@@ -52,9 +54,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#0B1F3A",
-          "image": "./assets/icon.png",
-          "imageWidth": 160
+          "backgroundColor": "#ffffff",
+          "image": "./assets/logo-rndb.png",
+          "imageWidth": 220
         }
       ],
       "expo-font",
