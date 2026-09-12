@@ -6,6 +6,7 @@ import {
   Image,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -67,7 +68,11 @@ export function LiveScreen() {
   }
 
   return (
-    <View style={styles.conteneur}>
+    <ScrollView
+      style={styles.conteneur}
+      contentContainerStyle={styles.contenu}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.entete}>
         <Image source={require("../../assets/logo-rndb.png")} style={styles.logo} resizeMode="contain" />
         <LiveBadge />
@@ -231,7 +236,7 @@ export function LiveScreen() {
           setModalMinuteurVisible(false);
         }}
       />
-    </View>
+    </ScrollView>
   );
 }
 
@@ -272,7 +277,8 @@ function ModalChoix({
 }
 
 const styles = StyleSheet.create({
-  conteneur: { flex: 1, backgroundColor: colors.fond, alignItems: "center", paddingTop: 60 },
+  conteneur: { flex: 1, backgroundColor: colors.fond },
+  contenu: { alignItems: "center", paddingTop: 60, paddingBottom: 140 },
   entete: { alignItems: "center", gap: 10, marginBottom: espacement.lg },
   logo: { width: 96, height: 96, marginBottom: 4 },
   nomStation: { color: colors.texteSecondaire, fontSize: 12, fontWeight: "600", letterSpacing: 1 },

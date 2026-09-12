@@ -131,6 +131,15 @@ export function Coquille({
           </Link>
         ) : null}
 
+        {hasPermission("citizen_reports.view") ? (
+          <Link
+            href="/signalements-citoyens"
+            className={`sidebar-lien${chemin === "/signalements-citoyens" ? " actif" : ""}`}
+          >
+            <span className="emoji">📣</span> Infos des auditeurs
+          </Link>
+        ) : null}
+
         {hasPermission("users.view") ? (
           <Link href="/equipe" className={`sidebar-lien${chemin === "/equipe" ? " actif" : ""}`}>
             <span className="emoji">👥</span> Équipe

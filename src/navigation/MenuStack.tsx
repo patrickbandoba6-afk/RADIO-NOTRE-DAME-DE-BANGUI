@@ -15,6 +15,7 @@ import { VideosScreen } from "@/screens/media/VideosScreen";
 import { CommuniquesScreen } from "@/screens/menu/CommuniquesScreen";
 import { ContactScreen } from "@/screens/menu/ContactScreen";
 import { DossiersScreen } from "@/screens/menu/DossiersScreen";
+import { EnvoyerInfoScreen } from "@/screens/compte/EnvoyerInfoScreen";
 import { HistoriqueScreen } from "@/screens/menu/HistoriqueScreen";
 import { MonProfilScreen } from "@/screens/compte/MonProfilScreen";
 import { AdminScreen } from "@/screens/menu/AdminScreen";
@@ -47,6 +48,7 @@ export function MenuStack() {
       <Stack.Screen name="Historique" component={HistoriqueScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Telechargements" component={TelechargementsScreen} options={{ title: "Mes téléchargements" }} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ title: "Notifications" }} />
+      <Stack.Screen name="EnvoyerInfo" component={EnvoyerInfoScreen} options={{ title: "Envoyer une info à la radio" }} />
       <Stack.Screen name="Evangile" component={EvangileScreen} options={{ title: "" }} />
       <Stack.Screen name="MaJournee" component={PrierAccueilScreen} options={{ title: "Ma journée avec Dieu" }} />
       <Stack.Screen name="Prieres" component={PrieresScreen} options={{ headerShown: false }} />

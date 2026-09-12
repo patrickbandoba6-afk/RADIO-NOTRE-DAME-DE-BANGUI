@@ -4,9 +4,9 @@
 // retombe sur les données d'exemple locales sinon (ou en cas d'erreur
 // réseau). Les écrans n'ont donc jamais à savoir d'où vient le contenu.
 import * as exemple from "@/data/sampleEditorial";
-import { podcasts as podcastsExemple, predications as predicationsExemple, videos as videosExemple, evenements as evenementsExemple } from "@/data/sampleData";
+import { podcasts as podcastsExemple, predications as predicationsExemple, videos as videosExemple, evenements as evenementsExemple, versetDuJour as versetDuJourExemple } from "@/data/sampleData";
 import { supabase } from "@/lib/supabase";
-import type { Evenement, Podcast, Predication, VideoContenu } from "@/types";
+import type { Evenement, Podcast, Predication, VersetDuJour, VideoContenu } from "@/types";
 import type {
   AlerteApp,
   Annonce,
@@ -478,6 +478,29 @@ export async function chargerEvangileDuJour(): Promise<EvangileDuJour> {
     };
   } catch {
     return exemple.evangileDuJour;
+  }
+}
+
+export async function chargerVersetDuJour(): Promise<VersetDuJour> {
+  if (!supabase) return versetDuJourExemple;
+  try {
+    const { data, error } = await supabase
+      .from("versets_du_jour")
+      .select("*")
+      .order("date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) return versetDuJourExemple;
+    return {
+      id: data.id,
+      reference: data.reference,
+      texte: data.texte,
+      traduction: data.traduction,
+      meditation: data.meditation ?? "",
+      date: data.date,
+    };
+  } catch {
+    return versetDuJourExemple;
   }
 }
 

@@ -47,6 +47,7 @@ export type PileMenu = {
   Historique: undefined;
   Telechargements: undefined;
   Notifications: undefined;
+  EnvoyerInfo: undefined;
   Evangile: undefined;
   MaJournee: undefined;
   Prieres: undefined;

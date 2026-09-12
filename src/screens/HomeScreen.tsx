@@ -25,9 +25,10 @@ import {
   chargerEvangileDuJour,
   chargerEvenements,
   chargerGrille,
+  chargerVersetDuJour,
 } from "@/lib/repository";
 import { colors, espacement, rayon } from "@/theme/colors";
-import type { Evenement } from "@/types";
+import type { Evenement, VersetDuJour } from "@/types";
 import type {
   Annonce,
   Article,
@@ -53,6 +54,7 @@ export function HomeScreen() {
   const { donnees: evenements } = useContenu<Evenement[]>(chargerEvenements, []);
   const { donnees: annonces } = useContenu<Annonce[]>(chargerAnnonces, []);
   const { donnees: evangile } = useContenu<EvangileDuJour | null>(chargerEvangileDuJour, null);
+  const { donnees: verset } = useContenu<VersetDuJour | null>(chargerVersetDuJour, null);
 
   const enDirectActif = pisteActuelle?.type === "direct" && enLecture;
 
@@ -206,6 +208,23 @@ export function HomeScreen() {
           <Text style={styles.referenceEvangile}>{evangile.evangile.reference}</Text>
           <Text style={styles.texteEvangile} numberOfLines={3}>
             « {evangile.evangile.texte} »
+          </Text>
+        </TouchableOpacity>
+      ) : null}
+
+      {/* Verset du jour */}
+      {verset ? (
+        <TouchableOpacity
+          style={styles.carteVerset}
+          onPress={() => navigation.navigate("Bible")}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.libelleVerset}>Verset du jour</Text>
+          <Text style={styles.texteVerset} numberOfLines={3}>
+            « {verset.texte} »
+          </Text>
+          <Text style={styles.referenceVerset}>
+            {verset.reference} — {verset.traduction}
           </Text>
         </TouchableOpacity>
       ) : null}
@@ -507,6 +526,29 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginTop: 6,
   },
+  carteVerset: {
+    marginHorizontal: espacement.md,
+    backgroundColor: colors.carte,
+    borderRadius: rayon.lg,
+    padding: espacement.md,
+    marginBottom: espacement.md,
+    borderWidth: 1,
+    borderColor: colors.primaireSombre,
+  },
+  libelleVerset: {
+    color: colors.primaire,
+    fontSize: 10,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
+  texteVerset: {
+    color: colors.texte,
+    fontSize: 15,
+    fontStyle: "italic",
+    lineHeight: 22,
+    marginTop: 6,
+  },
+  referenceVerset: { color: colors.texteSecondaire, fontSize: 12, marginTop: 6 },
 
   listeHorizontale: { paddingHorizontal: espacement.md, paddingBottom: espacement.md },
   blocListe: { paddingHorizontal: espacement.md, marginBottom: espacement.md },

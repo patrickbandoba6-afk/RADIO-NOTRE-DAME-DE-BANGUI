@@ -42,6 +42,12 @@ export function MenuScreen() {
       libelle: "Notifications",
       onPress: () => navigation.navigate("Notifications"),
     },
+    {
+      cle: "envoyerInfo",
+      icone: "megaphone-outline",
+      libelle: "Envoyer une info à la radio",
+      onPress: () => navigation.navigate("EnvoyerInfo"),
+    },
   ];
 
   const spiritualite: Entree[] = [
