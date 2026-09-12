@@ -6,7 +6,7 @@
 import * as exemple from "@/data/sampleEditorial";
 import { podcasts as podcastsExemple, predications as predicationsExemple, videos as videosExemple, evenements as evenementsExemple, versetDuJour as versetDuJourExemple } from "@/data/sampleData";
 import { supabase } from "@/lib/supabase";
-import type { Evenement, Podcast, Predication, VersetDuJour, VideoContenu } from "@/types";
+import type { Evenement, LivreBible, Podcast, Predication, VersetBible, VersetDuJour, VideoContenu } from "@/types";
 import type {
   AlerteApp,
   Annonce,
@@ -501,6 +501,59 @@ export async function chargerVersetDuJour(): Promise<VersetDuJour> {
     };
   } catch {
     return versetDuJourExemple;
+  }
+}
+
+export function chargerLivresBible(): Promise<LivreBible[]> {
+  return requete(async () => {
+    const { data, error } = await supabase!
+      .from("bible_livres")
+      .select("*")
+      .order("ordre");
+    if (error) throw error;
+    return (data ?? []).map((l) => ({
+      code: l.code,
+      nom: l.nom,
+      testament: l.testament,
+      canon: l.canon,
+      ordre: l.ordre,
+      nombreChapitres: l.nombre_chapitres,
+    }));
+  }, []);
+}
+
+export async function chargerVersetsChapitre(
+  livreCode: string,
+  chapitre: number,
+  traduction: string
+): Promise<VersetBible[]> {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase
+      .from("bible_versets")
+      .select("chapitre, verset, texte")
+      .eq("livre_code", livreCode)
+      .eq("chapitre", chapitre)
+      .eq("traduction", traduction)
+      .order("verset");
+    if (error) throw error;
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function chargerTraductionsDisponibles(livreCode: string): Promise<string[]> {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase
+      .from("bible_versets")
+      .select("traduction")
+      .eq("livre_code", livreCode);
+    if (error) throw error;
+    return Array.from(new Set((data ?? []).map((d) => d.traduction)));
+  } catch {
+    return [];
   }
 }
 

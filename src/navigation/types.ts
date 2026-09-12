@@ -52,6 +52,8 @@ export type PileMenu = {
   MaJournee: undefined;
   Prieres: undefined;
   Bible: undefined;
+  BibleLivres: undefined;
+  BibleChapitre: { livreCode: string; livreNom: string; nombreChapitres?: number; chapitre: number };
   Homelies: undefined;
   Priere: undefined;
   NouvelleDemandePriere: undefined;

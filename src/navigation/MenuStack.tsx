@@ -23,6 +23,8 @@ import { HomeliesScreen } from "@/screens/menu/HomeliesScreen";
 import { MentionsLegalesScreen } from "@/screens/menu/MentionsLegalesScreen";
 import { MenuScreen } from "@/screens/menu/MenuScreen";
 import { ParoissesScreen } from "@/screens/menu/ParoissesScreen";
+import { BibleChapitreScreen } from "@/screens/prier/BibleChapitreScreen";
+import { BibleLivresScreen } from "@/screens/prier/BibleLivresScreen";
 import { BibleScreen } from "@/screens/prier/BibleScreen";
 import { EvangileScreen } from "@/screens/prier/EvangileScreen";
 import { NouveauTemoignageScreen } from "@/screens/prier/NouveauTemoignageScreen";
@@ -53,6 +55,8 @@ export function MenuStack() {
       <Stack.Screen name="MaJournee" component={PrierAccueilScreen} options={{ title: "Ma journée avec Dieu" }} />
       <Stack.Screen name="Prieres" component={PrieresScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Bible" component={BibleScreen} options={{ title: "Bible" }} />
+      <Stack.Screen name="BibleLivres" component={BibleLivresScreen} options={{ title: "" }} />
+      <Stack.Screen name="BibleChapitre" component={BibleChapitreScreen} options={{ title: "" }} />
       <Stack.Screen name="Homelies" component={HomeliesScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Priere" component={PriereScreen} options={{ title: "Demandes de prière" }} />
       <Stack.Screen name="NouvelleDemandePriere" component={NouvelleDemandePriereScreen} options={{ title: "" }} />

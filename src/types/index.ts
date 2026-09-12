@@ -48,6 +48,21 @@ export interface VersetDuJour {
   date: string;
 }
 
+export interface LivreBible {
+  code: string;
+  nom: string;
+  testament: "ancien" | "nouveau";
+  canon: "commun" | "deuterocanonique" | "annexe";
+  ordre: number;
+  nombreChapitres: number;
+}
+
+export interface VersetBible {
+  chapitre: number;
+  verset: number;
+  texte: string;
+}
+
 export type ConfidentialitePriere = "publique" | "privee" | "anonyme";
 export type StatutPriere = "recue" | "en_priere" | "traitee";
 

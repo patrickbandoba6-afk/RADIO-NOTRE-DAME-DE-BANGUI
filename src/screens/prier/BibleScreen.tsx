@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import * as Clipboard from "expo-clipboard";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -16,6 +17,7 @@ const PLANS_LECTURE = [
 
 export function BibleScreen() {
   const { t } = useTranslation();
+  const navigation = useNavigation<any>();
   const [recherche, setRecherche] = useState("");
   const [favori, setFavori] = useState(false);
   const [copie, setCopie] = useState(false);
@@ -40,6 +42,14 @@ export function BibleScreen() {
           onChangeText={setRecherche}
         />
       </View>
+
+      <TouchableOpacity
+        style={styles.boutonParcourir}
+        onPress={() => navigation.navigate("BibleLivres")}
+      >
+        <Ionicons name="book-outline" size={18} color={colors.fond} />
+        <Text style={styles.boutonParcourirTexte}>Parcourir tous les livres (texte et audio)</Text>
+      </TouchableOpacity>
 
       <View style={styles.carteVerset}>
         <Text style={styles.label}>{t("bible.versetDuJour")}</Text>
@@ -88,6 +98,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   inputRecherche: { flex: 1, color: colors.texte, paddingVertical: 10 },
+  boutonParcourir: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: colors.primaire,
+    marginHorizontal: espacement.md,
+    borderRadius: rayon.rond,
+    paddingVertical: 13,
+    marginBottom: espacement.lg,
+  },
+  boutonParcourirTexte: { color: colors.fond, fontWeight: "700", fontSize: 13 },
   carteVerset: {
     marginHorizontal: espacement.md,
     backgroundColor: colors.fondClair,
